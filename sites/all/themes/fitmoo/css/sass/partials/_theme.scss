@@ -1,0 +1,471 @@
+
+/* --------------------------------
+PAGE WIDTHS
+----------------------------------*/
+
+
+/* --------------------------------
+THEME STRUCTURE
+----------------------------------*/
+
+#header-top {
+	height:43px;
+	#logo {
+		padding-top:5px;
+		padding-left:8px;	
+	}
+}
+
+#header {
+	background:#2c3135;
+	border-top:1px solid #dae1e3;
+	border-bottom:2px solid #e4e4e4;
+	height:44px;
+	margin-bottom:30px;
+}
+
+.commerce-checkout-progress li {
+	&,
+	a,
+	&.active,
+	&.active a{
+		font-family:$fontMed;
+		font-weight:normal;
+		-webkit-font-smoothing:antialiased;
+	}
+}
+
+#block-commerce-checkout-progress-indication {
+//#block-system-main-menu {
+	h2 {
+		display:none;
+	}
+	li {
+		float:left;
+		margin-left:40px;
+		padding:0 20px 0 20px;	
+		
+		&,
+		a {
+			color:#fff;
+			line-height:41px;
+			text-decoration:none;
+			text-transform:uppercase;
+		}
+
+		&.active {
+			border-bottom:3px solid #0f93ef;
+		}
+	}
+}
+
+.button-operator {
+	display:none !important;
+}
+
+#contentWrapper {
+	margin:0 auto 50px;
+	max-width:90%;
+	width:1265px;
+	&:after {
+		@extend .clear;
+	}
+}
+
+.one-sidebar {
+	#content {
+		margin:0;
+		float:left;
+		margin-right:0%;
+		max-width:935px;
+		width:75%;
+	}
+
+	#sidebar-second {
+		float:left;
+		max-width:335px;
+		width:23%;
+		.region-sidebar-second {
+			margin:0 0 0 10%;
+			width:90%;
+		}
+	}
+}
+
+#content {
+
+	.region-content {
+		margin:0 auto;
+		&:after {
+			@extend .clear;
+		}
+	}
+}
+
+.page-checkout {
+	.region-content {
+		//border-right:2px solid #a9a9a9;
+		padding-right:3%;
+	}
+
+	#header {
+		margin-bottom:0;
+	}
+
+	#pageWrapper {
+		background:#f3f2f4;
+	}
+
+	#header-top {
+		background:#fff;
+	}
+
+	#contentWrapper {
+		padding-top:30px;
+	}
+
+	#sidebar-second .content {
+		background:#fff;
+		font-size:16px;
+		padding:0;
+	}
+
+	.region-sidebar-second {
+		.views-field {
+			padding:0 15px 15px;
+		}
+
+		.views-field-nothing {
+			border-bottom:1px solid #cfd1d3;
+			max-width:78%;
+			margin:0 auto 15px;
+		}
+
+		.views-field-commerce-product {
+			float:left;
+			padding:0 0 0 5%;
+			width:45%;
+			.field-type-image {
+				margin-bottom:10px;
+			}
+		}
+
+		.views-field-edit-quantity {
+			float:left;
+			padding:0;
+			width:45%;
+			.views-label {
+				display:block;
+				margin-bottom:9px;
+			}
+			input {
+				width:50px;
+			}
+		}
+
+		.views-field-uid {
+			clear:both;
+			display:block;
+			padding-top:20px;
+		}
+
+		.views-field-commerce-order-total {
+			padding:15px 15px 20px;
+			margin-bottom:30px;
+			border-bottom:1px solid #cfd1d3;
+			table {
+				width:100%;
+			}
+
+			td {
+				font-family:$fontMed;
+				padding-bottom:10px;
+			}
+
+			td:first-child {
+				width:75%;
+			}
+
+			td.component-total {
+				text-align:right;
+			}
+		}
+	}
+}
+
+.page-checkout.section-checkout.sidebar-second {
+
+	#contentWrapper {
+		width:1120px;
+	}
+
+	#content {
+		max-width:825px;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --------------------------------
+THEME ELEMENTS
+----------------------------------*/
+
+/* product */
+
+.node-service,
+.node-clothing,
+.node-product {
+
+	margin:0 auto;
+	max-width:830px;
+
+	h2,
+	.content {
+		a {
+			color:#333;
+			text-decoration:none;
+		}
+	}
+
+	h2 {
+		color:#333;
+		clear:right;
+		font-family:$fontMed;
+		font-size:20px;
+		line-height:26px;
+		float:right;
+		margin-bottom:10px;
+		width:46%;
+	}
+
+	.vocabulary-product-size h2 {
+		float:none;
+		font:normal 12px/14px $fontMed;
+		margin:0;
+		padding:0;
+		text-transform:capitalize;
+		width:auto;
+	}
+	.content {
+		position:relative;
+	}
+
+	// testing
+	.commerce-add-to-cart {
+		#edit-line-item-fields,
+		.attribute-widgets {
+			float:left;
+		}
+
+		.attribute-widgets {
+			margin-right:12px;
+			width:222px;
+			max-width:50%;
+		}
+
+		#edit-line-item-fields {
+			display:none;
+		}
+
+		.form-submit {
+			float:left;
+			padding:0 7%;
+			// to match label, may remove, temp
+			//margin-top:19px;
+		}
+
+
+	}
+
+	// replace field layout with fieldset layout
+
+	.field-group-fieldset {
+
+		&.group-product-details,
+		&.group-product-media {
+			float:left;
+			> legend {
+				display:none;
+			}
+
+			.fieldset-wrapper {
+				margin:0;
+				max-width:100%;
+			}
+		}
+
+		&.group-product-details {
+			float:right;
+			width:46%;
+			.field {
+				clear:right;
+				float:left;
+				margin-bottom:10px;
+				z-index:1;
+				width:100%;
+			}
+		}
+
+		&.group-product-media {
+			float:left;
+			margin-right:5%;
+			width:45%;
+		}
+	}
+
+	// .field-name-field-weight,
+	// .field-name-field-brand,
+	// .field-name-field-product,
+	// .field-name-field-gender,
+	.field-group-fieldset .field,
+	.commerce-product-field {
+
+	// testing
+		.field-label {
+			margin-right:10px;
+			width:65px;
+		}
+	//
+	
+		label,
+		.field-label,
+		.field-items {
+			color:#333;
+			float:left;
+			font-size:12px;
+			//			line-height:20px;
+			line-height:14px;
+			text-transform:capitalize;
+			.sb .display {
+				font-size:14px;
+				line-height:40px;
+				text-transform:capitalize;
+			}
+		}
+
+		label,
+		.field-label {
+			font-family:$fontBook;
+			font-weight:normal;
+		}
+
+		.field-items {
+			font-family:$fontMed;
+		}
+
+		.attribute-widgets {
+			//margin-bottom:15px;
+
+			// &:after {
+			// 	@extend .clear;
+			// }
+
+			label {
+				//float:left;
+				display:none;
+			}
+
+			select {
+				float:left;
+			}
+		}
+	}
+
+	.field-group-fieldset .field {
+
+		&.field-name-field-gender {
+				.field-label {
+					display:none;
+				}
+				.field-items {
+				font-family:$fontReg;
+			}
+		}
+
+		&.field-name-field-gender {
+			margin-bottom:20px;
+		}
+
+		&.field-name-body {
+			margin-bottom:5px;
+			padding-top:5px;
+			.field-items {
+				font-family:$fontReg;
+				font-size:13px;
+				line-height:19px;
+			}
+		}
+
+		&.field-name-field-product {
+			.field-label {
+				display:none;
+			}
+		}
+	}
+
+	.field-name-commerce-price .field-item {
+		@extend .themePrice;
+		margin-bottom:45px;
+	}
+	
+	.commerce-product-field.commerce-product-field-field-image {
+
+
+		.field-name-field-image {
+			background:#f5f5f5;
+			padding:5%;
+			// width:388px;
+			// padding:2%;
+			// max-width:88%;
+			width:90%;
+			height:auto;
+			&:after {
+				@extend .clear;
+			}
+
+			.field-items {
+				width:100%;
+			}
+
+			.field-label {
+				display:none;
+			}
+		}
+
+		img {
+			margin:0 auto;
+		}
+	}
+}
+
+.price {
+	font-family:$fontMed;
+}
+
+
