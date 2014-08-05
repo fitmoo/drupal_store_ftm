@@ -1,0 +1,1 @@
+<div style="background-color: #000000;color:#ffffff;padding: 19px 24px;">CHECKOUT</div>
