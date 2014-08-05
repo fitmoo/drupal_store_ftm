@@ -364,7 +364,7 @@ function commerce_addressbook_form_alter(&$form, &$form_state, $form_id) {
           $form[$pane_id]['addressbook'] = array(
             '#addressbook' => TRUE,
             '#type' => 'select',
-            '#title' => t('Addresses on File'),
+            '#title' => t('ADDRESSES ON FILE'),
             '#description' => t('You may select a pre-existing address on file.'),
             '#options' => $options,
             '#empty_option' => t('-- Choose --'),

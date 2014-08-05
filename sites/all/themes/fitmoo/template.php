@@ -88,7 +88,7 @@ function fitmoo_preprocess_page(&$vars) {
 	    drupal_goto($redirect_base);
 		
 	}
-	
+	// do this for the referer id which places it in the session
     if(arg(0) == 'cart'){
 	  if(isset($_GET['checkout'])){
  	     $_SESSION['callback'] = $_GET['checkout'];

@@ -2453,161 +2453,154 @@ function commerce_services_update_entity($entity_type, $entity_id, $data, $flatt
  *   flattened as in GET requests; accepts true or false, defaults to true.
  */
 function commerce_services_set_field_values($entity_type, $entity, $data, $flatten_fields) {
-  $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
-  $properties = entity_get_property_info($entity_type);
-  $bundle = field_extract_bundle($entity_type, $entity);
+    try {
+        $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
+        $properties = entity_get_property_info($entity_type);
+        $bundle = field_extract_bundle($entity_type, $entity);
 
-  // Build an array of protected properties, preventing update requests from
-  // changing IDs and other immutable properties of the entity.
-  $entity_info = entity_get_info($entity_type);
-  $entity_keys = array_diff_key($entity_info['entity keys'], array('label' => ''));
+        // Build an array of protected properties, preventing update requests from
+        // changing IDs and other immutable properties of the entity.
+        $entity_info = entity_get_info($entity_type);
+        $entity_keys = array_diff_key($entity_info['entity keys'], array('label' => ''));
 
-  $protected_properties = array_values($entity_keys);
+        $protected_properties = array_values($entity_keys);
 
-  // Loop over the data submitted with the request.
-  foreach ($data as $key => $value) {
-    // If the key is a property name...
-    if (in_array($key, commerce_services_entity_type_properties($entity_type))) {
-      // If it attempts to change a protected property, return the error.
-      if (in_array($key, $protected_properties) && $entity->{$key} != $value) {
-        return services_error(t('Property @property cannot be changed', array('@property' => $key)), 400);
-      }
+        // Loop over the data submitted with the request.
+        foreach ($data as $key => $value) {
+            // If the key is a property name...
+            if (in_array($key, commerce_services_entity_type_properties($entity_type))) {
+                // If it attempts to change a protected property, return the error.
+                if (in_array($key, $protected_properties) && $entity->{$key} != $value) {
+                    return services_error(t('Property @property cannot be changed', array('@property' => $key)), 400);
+                }
 
-      // If valid, set it directly to the entity.
-      if (commerce_services_validate_property_value($entity_type, $entity, $key, $value)) {
-        $entity->{$key} = $value;
+                // If valid, set it directly to the entity.
+                if (commerce_services_validate_property_value($entity_type, $entity, $key, $value)) {
+                    $entity->{$key} = $value;
 
-        // If the key was a log message, ensure a new revision is triggered.
-        $entity->revision = TRUE;
-      }
-      //====poor style of hardcoding
-      elseif ($key=='uid' and is_numeric($value)) {
-          $entity->{$key} = $value;
-          $entity->revision = TRUE;
-      }
-      else {
-        return services_error(t('Invalid @property value given', array('@property' => $key)), 400);
-      }
-    }
-    else {
-      // Look for the key as a field name in the entity type's field list.
-      $known_field = FALSE;
+                    // If the key was a log message, ensure a new revision is triggered.
+                    $entity->revision = TRUE;
+                } //====poor style of hardcoding
+                elseif ($key == 'uid' and is_numeric($value)) {
+                    $entity->{$key} = $value;
+                    $entity->revision = TRUE;
+                } else {
+                    return services_error(t('Invalid @property value given', array('@property' => $key)), 400);
+                }
+            } else {
+                // Look for the key as a field name in the entity type's field list.
+                $known_field = FALSE;
 
-      foreach (commerce_services_entity_type_fields($entity_type) as $field_name => $field_type) {
-        // If the key begins with a field name, then either the key is the field
-        // name or is a column of the field.
-        if (strpos($key, $field_name) === 0) {
-          $field_info = field_info_field($field_name);
+                foreach (commerce_services_entity_type_fields($entity_type) as $field_name => $field_type) {
+                    // If the key begins with a field name, then either the key is the field
+                    // name or is a column of the field.
+                    if (strpos($key, $field_name) === 0) {
+                        $field_info = field_info_field($field_name);
 
-          // Because the entity metadata wrapper treats text fields differently
-          // based on whether or not they enable format selection, we also
-          // accommodate the inconsistency here. If a text field does not have
-          // text formatting enabled, we unset that column from the field schema
-          // so it can be set independently as if it were the only column in the
-          // field value.
-          if (in_array($field_info['type'], array('text', 'text_long'))) {
-            $instance_info = field_info_instance($entity_type, $field_name, $entity->type);
+                        // Because the entity metadata wrapper treats text fields differently
+                        // based on whether or not they enable format selection, we also
+                        // accommodate the inconsistency here. If a text field does not have
+                        // text formatting enabled, we unset that column from the field schema
+                        // so it can be set independently as if it were the only column in the
+                        // field value.
+                        if (in_array($field_info['type'], array('text', 'text_long'))) {
+                            $instance_info = field_info_instance($entity_type, $field_name, $entity->type);
 
-            if (empty($instance_info['settings']['text_processing'])) {
-              unset($field_info['columns']['format']);
+                            if (empty($instance_info['settings']['text_processing'])) {
+                                unset($field_info['columns']['format']);
+                            }
+                        }
+                        if ($key == 'field_image' and is_array($value)) {
+                            $entity->{$key} = $value;
+                            $entity->revision = TRUE;
+                            $known_field = TRUE;
+                        } elseif ($field_name == $key) {
+                            // If the update request sent fields in a flattened format...
+                            if ($flatten_fields == 'true') {
+                                // Update the field value without specifying a language code.
+                                if ($field_info['cardinality'] == 1) {
+                                    commerce_services_update_field_value($entity_type, $entity, $field_info, $value);
+                                } else {
+                                    // For multi-value fields, loop over the value array and pass
+                                    // the delta value to the update function.
+                                    foreach ($value as $delta => $item) {
+                                        commerce_services_update_field_value($entity_type, $entity, $field_info, $item, NULL, $delta);
+                                    }
+                                }
+                            } else {
+                                // Otherwise, loop over the languages given and attempt to update
+                                // the field value individually for each language code. Since
+                                // field values are not flattened, the value array must include a
+                                // language code and delta values even for single-value fields.
+                                foreach ($value as $langcode => $items) {
+                                    // Return an error if the $langcode is unknown or if $items is
+                                    // not an array.
+                                    if ($langcode != LANGUAGE_NONE && !in_array($langcode, array_keys(language_list()))) {
+                                        return services_error(t('Unknown language @langcode in @field value', array('@langcode' => $langcode, '@field' => $field_name)), 400);
+                                    } elseif (!is_array($items)) {
+                                        return services_error(t('Invalid @field value given', array('@field' => $field_name)), 400);
+                                    }
+
+                                    foreach ($items as $delta => $item) {
+                                        // If $item is empty, simply unset it at the delta value.
+                                        if (empty($item)) {
+                                            unset($entity->{$field_name}[$langcode][$delta]);
+                                        } else {
+                                            // Otherwise update the field value for the delta value.
+                                            commerce_services_update_field_value($entity_type, $entity, $field_info, $item, $langcode, $delta);
+                                        }
+                                    }
+                                }
+                            }
+
+                            $known_field = TRUE;
+                            break;
+                        } else {
+                            // Otherwise if the key contains a valid column specification for
+                            // the field type, create a value array to set the column directly.
+                            $column = substr($key, strlen($field_name) + 1);
+
+                            if (in_array($column, array_keys($field_info['columns']))) {
+                                if ($flatten_fields == 'true') {
+                                    // Directly set single value fields.
+                                    if ($field_info['cardinality'] == 1) {
+                                        commerce_services_update_field_value($entity_type, $entity, $field_info, array($column => $value));
+                                    } else {
+                                        // For multi-value fields, loop over the value array and pass
+                                        // the delta value to the update function.
+                                        foreach ($value as $delta => $item) {
+                                            commerce_services_update_field_value($entity_type, $entity, $field_info, array($column => $item), NULL, $delta);
+                                        }
+                                    }
+                                } else {
+                                    // If field values are not flattened, they must include both a
+                                    // language code and delta values even for single-value fields.
+                                    foreach ($value as $langcode => $items) {
+                                        foreach ($items as $delta => $item) {
+                                            commerce_services_update_field_value($entity_type, $entity, $field_info, array($column => $item), $langcode, $delta);
+                                        }
+                                    }
+                                }
+
+                                $known_field = TRUE;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // If no known field matched, return a 400 error.
+                if (!$known_field) {
+                    return services_error(t('Unknown property @name', array('@name' => $key)), 400);
+                }
             }
-          }
-          if ($key=='field_image' and is_array($value)) {
-              $entity->{$key} = $value;
-              $entity->revision = TRUE;
-              $known_field = TRUE;
-          }
-          elseif ($field_name == $key) {
-            // If the update request sent fields in a flattened format...
-            if ($flatten_fields == 'true') {
-              // Update the field value without specifying a language code.
-              if ($field_info['cardinality'] == 1) {
-                commerce_services_update_field_value($entity_type, $entity, $field_info, $value);
-              }
-              else {
-                // For multi-value fields, loop over the value array and pass
-                // the delta value to the update function.
-                foreach ($value as $delta => $item) {
-                  commerce_services_update_field_value($entity_type, $entity, $field_info, $item, NULL, $delta);
-                }
-              }
-            }
-            else {
-              // Otherwise, loop over the languages given and attempt to update
-              // the field value individually for each language code. Since
-              // field values are not flattened, the value array must include a
-              // language code and delta values even for single-value fields.
-              foreach ($value as $langcode => $items) {
-                // Return an error if the $langcode is unknown or if $items is
-                // not an array.
-                if ($langcode != LANGUAGE_NONE && !in_array($langcode, array_keys(language_list()))) {
-                  return services_error(t('Unknown language @langcode in @field value', array('@langcode' => $langcode, '@field' => $field_name)), 400);
-                }
-                elseif (!is_array($items)) {
-                  return services_error(t('Invalid @field value given', array('@field' => $field_name)), 400);
-                }
-
-                foreach ($items as $delta => $item) {
-                  // If $item is empty, simply unset it at the delta value.
-                  if (empty($item)) {
-                    unset($entity->{$field_name}[$langcode][$delta]);
-                  }
-                  else {
-                    // Otherwise update the field value for the delta value.
-                    commerce_services_update_field_value($entity_type, $entity, $field_info, $item, $langcode, $delta);
-                  }
-                }
-              }
-            }
-
-            $known_field = TRUE;
-            break;
-          }
-          else {
-            // Otherwise if the key contains a valid column specification for
-            // the field type, create a value array to set the column directly.
-            $column = substr($key, strlen($field_name) + 1);
-
-            if (in_array($column, array_keys($field_info['columns']))) {
-              if ($flatten_fields == 'true') {
-                // Directly set single value fields.
-                if ($field_info['cardinality'] == 1) {
-                  commerce_services_update_field_value($entity_type, $entity, $field_info, array($column => $value));
-                }
-                else {
-                  // For multi-value fields, loop over the value array and pass
-                  // the delta value to the update function.
-                  foreach ($value as $delta => $item) {
-                    commerce_services_update_field_value($entity_type, $entity, $field_info, array($column => $item), NULL, $delta);
-                  }
-                }
-              }
-              else {
-                // If field values are not flattened, they must include both a
-                // language code and delta values even for single-value fields.
-                foreach ($value as $langcode => $items) {
-                  foreach ($items as $delta => $item) {
-                    commerce_services_update_field_value($entity_type, $entity, $field_info, array($column => $item), $langcode, $delta);
-                  }
-                }
-              }
-
-              $known_field = TRUE;
-              break;
-            }
-          }
         }
-      }
 
-      // If no known field matched, return a 400 error.
-      if (!$known_field) {
-        return services_error(t('Unknown property @name', array('@name' => $key)), 400);
-      }
+        // @todo Post-process textfields by invoking text_field_load() on their values
+        // to get the updated summary and safe_value values.
+    }catch(Exception $e){
+        error_log("exception: ".$e->getMessage());
     }
-  }
-
-  // @todo Post-process textfields by invoking text_field_load() on their values
-  // to get the updated summary and safe_value values.
 }
 
 /**

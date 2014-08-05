@@ -111,8 +111,6 @@ function commerce_services_cart_create($data, $flatten_fields) {
  * Creates a new line item on an order.
  */
 function commerce_services_line_item_create($data, $flatten_fields) {
-
-
     global $user;
 //====check&create order
     $uid = !empty($user->uid) ? $user->uid : 0;
@@ -132,11 +130,18 @@ function commerce_services_line_item_create($data, $flatten_fields) {
      unset($data['callback']);
   }
 
-  $order = commerce_order_load($order_id);
+    $order = commerce_order_load($order_id);
+
+    if (!empty($data['endorser_drupal_id'])){
+        $_SESSION['endorser_drupal_id'] = $data['endorser_drupal_id'];
+        $order->field_referer['und'][0]['uid'] = $data['endorser_drupal_id'];
+        unset($data['endorser_drupal_id']);
+    }
 
   if ($data['type'] != 'shipping') {
 
       $product = commerce_product_load($data['commerce_product']);
+
       foreach ($order->commerce_line_items['und'] as $line) {
           $line_item = commerce_line_item_load($line['line_item_id']);
           if ($line_item->type != 'shipping') {
@@ -190,7 +195,6 @@ function commerce_services_line_item_create($data, $flatten_fields) {
         $product = commerce_product_load($data['commerce_product']['und'][0]);
       }
     }
-
     // Bail now if the product wasn't found.
     if (empty($product)) {
       return services_error(t('You must specify a valid commerce_product value'), 400);
@@ -208,7 +212,6 @@ function commerce_services_line_item_create($data, $flatten_fields) {
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
   $order_wrapper->commerce_line_items[] = $line_item;
   commerce_order_save($order);
-
   // Add simplified fields to the line item object for certain field types.
   commerce_services_decorate_entity('commerce_line_item', $line_item);
 
@@ -219,7 +222,6 @@ function commerce_services_line_item_create($data, $flatten_fields) {
     $line_item = clone($line_item);
     commerce_services_flatten_fields('commerce_line_item', $line_item);
   }
-
   return $line_item;
 }
 /**

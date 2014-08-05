@@ -28,7 +28,7 @@ function fitmoo_product_create_item($items){
 	$product_item->title = $items['title'];
 	$product_item->uid = $items['uid']; //id of logged in user
 	$product_item->sku = $items['sku']; //this nees to be unique
-	$prodict_item->status = 1;
+	$product_item->status = 1;
 	$product_item->created = $product_item->changed = time();
 	$product_item->commerce_price['und'][0]['amount'] = $items['amount']; //in cents, ie $20.00 = 2000
 	$product_item->commerce_price['und'][0]['currency_code'] = $items['currency_code']; //set default to USD
@@ -42,14 +42,10 @@ function fitmoo_product_create_item($items){
 	$product_item->field_fitmooid['und'][0]['value'] = $items['fitmooID']; //integer for now, might be a string must be unique
 	commerce_product_save($product_item);
 	return $product_item->product_id;
-	
-	
-	
-	
 }
 
 function fitmoo_product_create_product($product){
-	
+
 	//product is an array or object you get from API request
 	
 	$product_node = new stdClass();
@@ -70,13 +66,13 @@ function fitmoo_product_create_product($product){
 }
 
 function fitmoo_product_load_item($productID){
-	
+
 	return;
 }
 
 
 function fitmoo_product_load_product($nodeID){
-	
+
 	return;
 }
 
