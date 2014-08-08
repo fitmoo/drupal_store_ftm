@@ -334,7 +334,7 @@ function fitmoo_checkout_setShippingFee(){
     $types = commerce_product_reference_node_types();
     $form['info'] = array(
         '#type'=> 'item',
-        '#markup'=> t('Set shipping fees and default weigth'),
+        '#markup'=> t('Set shipping fees and default weight'),
     );
 
     foreach ($types as $type => $info) {
@@ -421,6 +421,11 @@ function fitmoo_checkout_setShippingFee_submit($form, &$form_state) {
 
 //TODO add logic to skip referer calculations if there is no referer id
 function fitmoo_checkout_calc_comisions($params){
+    error_log(__FILE__);
+    error_log("");
+    error_log(__FUNCTION__);
+    error_log("");
+    error_log(serialize($_SESSION));
     if($params['productType'] == 'event'){
 
         $buyer_perc = variable_get("buyer_event_perc", "");
@@ -499,6 +504,7 @@ function fitmoo_checkout_calc_comisions($params){
             'updated' => REQUEST_TIME,
         ))
         ->execute();
+        _update_user_balance(1);
 
     //referer
     try {
@@ -515,18 +521,18 @@ function fitmoo_checkout_calc_comisions($params){
                 'updated' => REQUEST_TIME,
             ))
             ->execute();
-
-        _update_user_balance(1);
-        $fitperc = $fitmoo_perc;
+            _update_user_balance(1);
+            $refererperc = $refferer_perc;
     }catch(Exception $e){
-        error_log(__FILE__ + '' + "exception: ".$e->getMessage());
+        error_log(__FILE__.' '.__FUNCTION__.' exception (test): '.$e->getMessage());
     }
+
+    $fitperc = $fitmoo_perc;
 
     $sellperc = $seller_perc;
 
     $buyperc = $buyer_perc;
 
-    //TODO add logic that deals with referer
     $data = array(
         'fitperc' => $fitperc,
         'fitcom' => $fitmoo_com,
@@ -537,7 +543,7 @@ function fitmoo_checkout_calc_comisions($params){
         'refererperc' => $refferer_perc,
         'referercom' => $refferer_com
     );
-
+    error_log(__FUNCTION__." has finished");
     return $data;
 
 }
@@ -546,7 +552,7 @@ function fitmoo_checkout_calc_comisions($params){
  * Implements hook_commerce_checkout_complete().
  */
 function fitmoo_checkout_commerce_checkout_complete($order) {
-    // save the referer id, in the array_parameters
+    //error_log("order: ".serialize($order));
     // Iterate through every commerce line item added in product.
     $info = array();
     foreach (field_get_items('commerce_order', $order, 'commerce_line_items') as $line_item_id) {
@@ -575,7 +581,6 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
                 'referer' => $order->field_referer["und"][0]["uid"]
             );
             // Grant userpoints programmatically.
-            //TODO add refererer logic
             $commisions = fitmoo_checkout_calc_comisions($params);
             $seller = user_load($product->uid);
             $fitmoo_fee = ($commisions['fitcom'] + $commisions['buycom'])*100;

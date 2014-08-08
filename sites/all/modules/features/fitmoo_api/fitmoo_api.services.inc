@@ -8,6 +8,8 @@
  * Implements hook_default_services_endpoint().
  */
 function fitmoo_api_default_services_endpoint() {
+    $callers=debug_backtrace();
+    error_log(__FILE__." ".$callers[1]['function']);
   $export = array();
 
   $endpoint = new stdClass();
