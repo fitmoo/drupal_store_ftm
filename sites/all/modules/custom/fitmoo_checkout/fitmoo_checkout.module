@@ -419,42 +419,75 @@ function fitmoo_checkout_setShippingFee_submit($form, &$form_state) {
     return $form;
 }
 
-//TODO add logic to skip referer calculations if there is no referer id
+/**
+ * Notes
+ * This is the old function, notice the misspelling, the new one is above
+ * Buyer percentage (buyer_perc) and fee is now not used at all but it's been left here until we can take it out of the admin
+ *
+ * TODO DELETE THIS FUNCTION
+ */
 function fitmoo_checkout_calc_comisions($params){
-    error_log(__FILE__);
-    error_log("");
-    error_log(__FUNCTION__);
-    error_log("");
-    error_log(serialize($_SESSION));
-    if($params['productType'] == 'event'){
+    /**
+     * For now these are hard coded due to not all of this being in the database
+     */
 
+    if($params['productType'] == 'event'){
+        /*
         $buyer_perc = variable_get("buyer_event_perc", "");
         $fitmoo_perc = variable_get("fitmoo_event_perc", "");
         $refferer_perc = variable_get("refferer_event_perc", "");
+        */
+        $buyer_perc = 0;
+        $fitmoo_perc = 10;
+        $refferer_perc = 5;
 
-    }else{
-
+    }elseif($params['productType'] == 'clothing' || $params['productType'] == 'shoes' || $params['productType'] == 'product'){
+        /*
         $buyer_perc = variable_get("buyer_perc", "");
         $fitmoo_perc = variable_get("fitmoo_perc", "");
         $refferer_perc = variable_get("refferer_perc", "");
+        */
+        $buyer_perc = 0;
+        $fitmoo_perc = 10;
+        $refferer_perc = 5;
+    }else{//type is membership
+        $buyer_perc = 0;
+        $fitmoo_perc = 2.5;
+        $refferer_perc = 5;
     }
 
-    $seller_perc = 100 - $buyer_perc - $fitmoo_perc;
+    //$seller_perc = 100 - $buyer_perc - $fitmoo_perc;
+    $seller_perc = 100 - $fitmoo_perc;
+
+    if(isset($params["referer"]) && $params["referer"] > 0){
+        $seller_perc = $seller_perc - $refferer_perc;
+    }else{
+        $refferer_perc = 0;
+    }
 
     // fitmoo field_referer_com here see http://dev.store.fitmoo.com/admin/commerce/config/commissions to set it
     $ccfees = ($params['ordertotal'] * .0299) + .30;
-    $fit_fee = (($params['total']/100)*$fitmoo_perc) + $ccfees;
+
     /**
-     * check business rules on whether is the referer fee taken out of the sellers total
-     * currently this isn't correct
-     * also figure out which it is fee or com and make all of them that
+     * TODO
+     * check business rules on the fees, commissions
      */
+    //$fit_fee = (($params['total']/100) * $fitmoo_perc/100) + $ccfees;
+    $fit_fee = ($params['total'] * ($fitmoo_perc/100)) + $ccfees;
+    //error_log("total: ".$params["total"]);
+    //error_log("fitmoo_perc/100: ".$fitmoo_perc/100);
+    //error_log("fit_fee: ".$fit_fee);
+
     //$refferer_fee = ($params["total"]/100 * $refferer_perc);
-    $refferer_com = ($params["total"]/100 * $refferer_perc);
+    $refferer_com = ($params["total"]) * ($refferer_perc/100);
+    //error_log("refferer_com: ".$refferer_com);
+
     //seller
-    $sell_com = $params['total'] - $fit_fee;//subtract the referer fee as well from the seller commission
+    $sell_com = ($params['total'] - $fit_fee) - $refferer_com;
 
     //insert the order in the database
+
+    //seller
     $id = db_insert('fitmoo_user_accounting')
         ->fields(array(
             'uid' => $params['seller_uid'],   //user ID
@@ -471,14 +504,15 @@ function fitmoo_checkout_calc_comisions($params){
     _update_user_balance($params['seller_uid']);
 
     //buyer
-    $buyer_com = ($params['total']/100)*$buyer_perc;
+    $buyer_com = ($params['total']/100)*$buyer_perc;//this doesn't look right
+    //error_log("buyer_com: ".$buyer_com);
 
     $id = db_insert('fitmoo_user_accounting')
         ->fields(array(
             'uid' => $params['buyer_uid'],   //user ID
             'type' => 'buyer', // buyer, seller, reference, fitmoo
             'ammount' => $buyer_com, // 20.00
-            'percentage' => variable_get("buyer_perc", ""), // commisions percent example seller now is 80
+            'percentage' => variable_get("buyer_perc", ""), // commisions percent
             'orderID' => $params['orderID'],
             'productID' => $params['productID'],
             'status' => 'pending', //pending, cleared, credit , withdrawn
@@ -488,8 +522,11 @@ function fitmoo_checkout_calc_comisions($params){
         ->execute();
     _update_user_balance($params['buyer_uid']);
 
-    //fitmoo
-    $fitmoo_com = $fit_fee;
+    /**
+     * TODO figure out why fitmoo_com is being set to equal fee, fitmoo commission and fitmoo fee are separate things but seem to be joined in the database
+     */
+    //$fitmoo_com = $fit_fee;
+    $fitmoo_com = $params['total'] * ($fitmoo_perc/100);
 
     $id = db_insert('fitmoo_user_accounting')
         ->fields(array(
@@ -505,6 +542,10 @@ function fitmoo_checkout_calc_comisions($params){
         ))
         ->execute();
         _update_user_balance(1);
+
+    /**
+     * TODO do we use the id of the referer here instead of uid = 1?
+     */
 
     //referer
     try {
@@ -543,93 +584,356 @@ function fitmoo_checkout_calc_comisions($params){
         'refererperc' => $refferer_perc,
         'referercom' => $refferer_com
     );
-    error_log(__FUNCTION__." has finished");
+    //error_log(__FUNCTION__." has finished");
     return $data;
 
+}
+
+
+/**
+ * 8/21/2014
+ *
+ * These are the definitions of variables for the checkout process.
+ *
+ * $fit_fee (in cents or decimal) is the fee Fitmoo incurs from a bank when completing a transaction, which is usually a flat fee (.30) and a small percentage of the total transaction (2.99%)
+ * $fit_perc is the percent fitmoo uses to calculate it's commission. this number is a decimal (2.5%)
+ * $fit_commission is the amount in cents or decimal (not including shipping) that Fitmoo takes from the order total using the $fit_perc to calculate it
+
+ * $refferer_perc is the percent fitmoo uses to calculate it's commission. this number is a decimal (2.5%)*
+ * $refferer_commission is the amount in cents or decimal (not including shipping) the referrer/endorser makes from the order total using the $refferer_perc to calculate it
+
+ * $seller_com is the amount in cents or decimal (not including shipping) the referrer/endorser makes from the order total using the $refferer_perc to calculate it
+ * $seller_perc is unused and should probably be taken out
+ *
+ * Please note the 2 different spellings of referrer -> refferer and referer
+ * - refferer is in the database and cannot be changed without changing the database
+ * - referer is in params and should be changed but for now it left unchanged
+ *
+ * fitmoo_checkout_calculate_commissions is called from fitmoo_checkout_commerce_checkout_complete which starts and ends a db transaction,
+ * therefore fitmoo_checkout_calculate_commissions is also in a transaction.
+ */
+function fitmoo_checkout_calculate_commissions($params){
+
+    /**
+     * For now these are hard coded due to not all of this being in the database
+     * In the database they are stored a decimal number, so the division is done here
+     */
+
+    if($params['productType'] == 'event'){
+        /*
+        $buyer_percentage = variable_get("buyer_event_perc", "");
+        $fitmoo_percentage = variable_get("fitmoo_event_perc", "");
+        $refferer_percentage = variable_get("refferer_event_perc", "");
+        */
+        $buyer_percentage = 0;
+        $fitmoo_percentage = 10/100;
+        $refferer_percentage = 5/100;
+
+    }elseif($params['productType'] == 'clothing' || $params['productType'] == 'shoes' || $params['productType'] == 'product'){
+        /*
+        $buyer_percentage = variable_get("buyer_perc", "");
+        $fitmoo_percentage = variable_get("fitmoo_perc", "");
+        $refferer_percentage = variable_get("refferer_perc", "");
+        */
+        $buyer_percentage = 0;
+        $fitmoo_percentage = 10/100;
+        $refferer_percentage = 5/100;
+    }else{//type is membership
+        $buyer_percentage = 0;
+        $fitmoo_percentage = 2.5/100;
+        $refferer_percentage = 5/100;
+    }
+
+    //convert totals into cents
+    //$ordertotal = $params["ordertotal"] * 100;
+    //$total = $params["total"] * 100;
+
+    //total as decimal
+    $ordertotal = $params["ordertotal"];
+    $total = $params["total"];
+
+    // Fitmoo
+
+    //in cents
+    //$fitmoo_fee = ($ordertotal * .0299) + 30;
+
+    //as decimal
+    $fitmoo_fee = ($ordertotal * .0299) + .30;
+
+    $fitmoo_commission = $total * $fitmoo_percentage;
+
+    // Referrer
+
+    if(!isset($params["referer"])){
+        $refferer_percentage = 0;
+        $refferer_commission = 0;
+    }else{
+        $refferer_commission = $total * $refferer_percentage;
+    }
+
+    // Seller
+
+    $seller_commission = $total - $refferer_commission;
+    $seller_commission -= $fitmoo_fee;
+    $seller_commission -= $fitmoo_commission;
+
+    //Buyer
+    $buyer_commission = 0;
+
+    $seller_percentage = 1;
+    $seller_percentage -= $fitmoo_percentage;
+    $seller_percentage -= $refferer_percentage;
+
+    //we have to look up the product to see if there's a difference between full shipping price
+    //and what the buyer is actually paying
+    $product = get_object_vars(commerce_product_load($params["productID"]));
+
+    //error_log(serialize($product));
+
+    //check if there is a difference between the two shipping rates
+    if($product["field_shipping_full_amount"]["und"][0]["value"] != $product["field_shipping_buyer_amount"]["und"][0]["value"]){
+
+        //in cents
+        $shipping_difference = $product["field_shipping_full_amount"]["und"][0]["value"] - $product["field_shipping_buyer_amount"]["und"][0]["value"];
+
+        //convert to decimal
+        $shipping_difference = commerce_currency_amount_to_decimal($shipping_difference, 'USD');
+
+        //error_log("shipping_difference (seller pays): ".$shipping_difference);
+
+        //if the difference is positive - meaning the seller is paying for part of the shipping
+        //subtract it from the seller's commission
+        if($shipping_difference > 0){
+            $seller_commission -= $shipping_difference;
+        }elseif($shipping_difference < 0){
+            //in the case where the seller is charging more for shipping than it costs, add the differnce to the seller's commission
+            $seller_commission += $shipping_difference;
+        }else{
+            //we should never get here due to the if above
+        }
+    }
+
+    //error_log("order total (goods only): ".$total);
+    //error_log("order total (with shipping): ".$ordertotal);
+    //error_log("fitmoo percentage: ".$fitmoo_percentage);
+    //error_log("fitmoo fee: ".$fitmoo_fee);
+    //error_log("fitmoo commission: ".$fitmoo_commission);
+    //error_log("refferer percentage: ".$refferer_percentage);
+    //error_log("refferer commission: ".$refferer_commission);
+    //error_log("seller percentage: ".$seller_percentage);
+    //error_log("seller_commission: ".$seller_commission);
+
+    //drupal_exit();
+
+    /**
+     * TODO This function should be moved to it's calling function if possible
+     * TODO figure out why the db inserts are set to an unused variable
+     */
+
+    //seller
+    $id = db_insert('fitmoo_user_accounting')
+        ->fields(array(
+            'uid' => $params['seller_uid'],   //user ID
+            'type' => 'seller', // buyer, seller, reference, fitmoo
+            'ammount' => $seller_commission,
+            'percentage' => $seller_percentage,
+            'orderID' => $params['orderID'],
+            'productID' => $params['productID'],
+            'status' => 'pending', //pending, cleared, credit , withdrawn
+            'created' => REQUEST_TIME,
+            'updated' => REQUEST_TIME,
+        ))
+        ->execute();
+    _update_user_balance($params['seller_uid']);
+
+    //buyer
+    $id = db_insert('fitmoo_user_accounting')
+        ->fields(array(
+            'uid' => $params['buyer_uid'],   //user ID
+            'type' => 'buyer', // buyer, seller, reference, fitmoo
+            'ammount' => $buyer_commission,
+            'percentage' => $buyer_percentage,
+            'orderID' => $params['orderID'],
+            'productID' => $params['productID'],
+            'status' => 'pending', //pending, cleared, credit , withdrawn
+            'created' => REQUEST_TIME,
+            'updated' => REQUEST_TIME,
+        ))
+        ->execute();
+    _update_user_balance($params['buyer_uid']);
+
+    $id = db_insert('fitmoo_user_accounting')
+        ->fields(array(
+            'uid' => 1,   //user ID
+            'type' => 'fitmoo', // buyer, seller, reference, fitmoo
+            'ammount' => $fitmoo_commission,
+            'percentage' => $fitmoo_percentage,
+            'orderID' => $params['orderID'],
+            'productID' => $params['productID'],
+            'status' => 'pending', //pending, cleared, credit , withdrawn
+            'created' => REQUEST_TIME,
+            'updated' => REQUEST_TIME,
+        ))
+        ->execute();
+    _update_user_balance(1);
+
+    //TODO do we use the id of the referer here instead of uid = 1?
+
+    //referer
+
+    $id = db_insert('fitmoo_user_accounting')
+        ->fields(array(
+            'uid' => 1, //user ID
+            'type' => 'refferer', // buyer, seller, reference/referer, fitmoo
+            'ammount' => $refferer_commission,
+            'percentage' => $refferer_percentage,
+            'orderID' => $params['orderID'],
+            'productID' => $params['productID'],
+            'status' => 'pending', //pending, cleared, credit , withdrawn
+            'created' => REQUEST_TIME,
+            'updated' => REQUEST_TIME,
+        ))
+        ->execute();
+    _update_user_balance(1);
+
+    /**
+     * TODO change these to the correct full form variable names, here and in the calling function
+     */
+    $data = array(
+        'fitperc' => $fitmoo_percentage,
+        'fitcom' => $fitmoo_commission,
+        'fitfee' => $fitmoo_fee,
+        'sellperc' => $seller_percentage,
+        'sellcom' => $seller_commission,
+        'buyperc' => $buyer_percentage,
+        'buycom' => $buyer_commission,
+        'refererperc' => $refferer_percentage,
+        'referercom' => $refferer_commission
+    );
+
+    return $data;
 }
 
 /**
  * Implements hook_commerce_checkout_complete().
  */
 function fitmoo_checkout_commerce_checkout_complete($order) {
-    //error_log("order: ".serialize($order));
-    // Iterate through every commerce line item added in product.
-    $info = array();
-    foreach (field_get_items('commerce_order', $order, 'commerce_line_items') as $line_item_id) {
+    /**
+     * Start transaction here
+     * Note the transaction extends to functions called in this one, so fitmoo_checkout_calculate_commissions
+     * is included in the transaction according to this: https://www.drupal.org/node/355875
+     */
 
-        // Load commerce line item by line item id.
-        $line_item = commerce_line_item_load($line_item_id['line_item_id']);
+    $transaction = db_transaction();
 
-        // We do not want to include shipping cost in userpoints.
-        if ($line_item->type != 'shipping') {
-            // Load commerce product by product id.
-            $qty = $line_item->quantity;
-            $temp = field_get_items('commerce_line_item', $line_item, 'commerce_product');
+    try {
 
-            $product = commerce_product_load($temp[0]['product_id']);
+        // Iterate through every commerce line item added in product.
+        $info = array();
+        foreach (field_get_items('commerce_order', $order, 'commerce_line_items') as $line_item_id) {
 
-            // Create parameters so that we can calculate the commissions
-            $params = array(
-                'seller_uid' => $product->uid,  //seller uid
-                'total' => commerce_currency_amount_to_decimal($product->commerce_price['und'][0]['amount']*$qty, $product->commerce_price['und'][0]['currency_code']),
-                'buyer_uid' => $order->uid,
-                'orderID' => $order->order_id,
-                'productID' => $product->product_id,
-                'productType' => $product->type,
-                'qty' => $qty,
-                'ordertotal' => commerce_currency_amount_to_decimal($order->commerce_order_total['und'][0]['amount'],'USD'),
-                'referer' => $order->field_referer["und"][0]["uid"]
-            );
-            // Grant userpoints programmatically.
-            $commisions = fitmoo_checkout_calc_comisions($params);
-            $seller = user_load($product->uid);
-            $fitmoo_fee = ($commisions['fitcom'] + $commisions['buycom'])*100;
-            $order->field_buyer_com['und'][0]['value'] = $commisions['buycom']*100;
-            $order->field_fitmoo_com['und'][0]['value'] = $commisions['fitcom']*100;
-            $order->field_fitmoo_fee['und'][0]['value'] = $fitmoo_fee;
-            $order->field_new_total['und'][0]['value'] = ($product->commerce_price['und'][0]['amount']*$qty) - ($fitmoo_fee);
-            $order->field_seller_email['und'][0]['value'] = $seller->mail;
-            $order->field_seller['und'][0]['uid'] = $product->uid;$order->field_referer_com['und'][0]['value'] = $commisions["referercom"] * 100;
+            // Load commerce line item by line item id.
+            $line_item = commerce_line_item_load($line_item_id['line_item_id']);
 
-            //send email to seller
-            $total =  commerce_currency_amount_to_decimal($product->commerce_price['und'][0]['amount'],'USD');
-            $info['qty'] = $line_item->quantity;
-            $info['uri'] = $product->field_image['und'][0]['uri'];
-            $term = taxonomy_term_load($product->field_size['und'][0]['tid']);
-            $info['size'] = $term->name;
+            // We do not want to include shipping cost in userpoints.
+            if ($line_item->type != 'shipping') {
+                // Load commerce product by product id.
+                $qty = $line_item->quantity;
+                $temp = field_get_items('commerce_line_item', $line_item, 'commerce_product');
 
-            $info['orderID'] = $order->order_id;
-            $buyer = user_load($order->uid);
-            $info['buyerEmail'] = $buyer->mail;
-            $info['product'] = $product->title;
-            $info['orderDate'] = $order->changed;
-            $info['total'] = $total;
-        }else if($line_item->type == 'shipping'){
-            $info['shipping'] = commerce_currency_amount_to_decimal($line_item->commerce_unit_price['und'][0]['amount'],'USD');
+                $product = commerce_product_load($temp[0]['product_id']);
+
+                // Create parameters so that we can calculate the commissions
+                $params = array(
+                    'seller_uid' => $product->uid,  //seller uid
+                    'total' => commerce_currency_amount_to_decimal($product->commerce_price['und'][0]['amount'] * $qty, $product->commerce_price['und'][0]['currency_code']),
+                    'buyer_uid' => $order->uid,
+                    'orderID' => $order->order_id,
+                    'productID' => $product->product_id,
+                    'productType' => $product->type,
+                    'qty' => $qty,
+                    'ordertotal' => commerce_currency_amount_to_decimal($order->commerce_order_total['und'][0]['amount'], 'USD'),
+                    'referer' => $order->field_referer["und"][0]["uid"]
+                );
+
+                // Grant userpoints programmatically.
+                //$commisions = fitmoo_checkout_calc_comisions($params);
+                $commisions = fitmoo_checkout_calculate_commissions($params);
+
+                $seller = user_load($product->uid);
+                //$fitmoo_fee = ($commisions['fitcom'] + $commisions['buycom']) * 100;
+                //$order->field_buyer_com['und'][0]['value'] = $commisions['buycom'] * 100;
+                //$order->field_fitmoo_com['und'][0]['value'] = $commisions['fitcom'] * 100;
+
+                /**
+                 * This is the old way of doing this where the fitmoo_fee is the fitmoo commission plus the buyer's commission (which now doesn't exist)
+                 */
+                //$fitmoo_fee = ($commisions['fitcom'] + $commisions['buycom']);
+                $fitmoo_fee = $commisions['fitfee'];
+                $order->field_fitmoo_fee['und'][0]['value'] = $commisions['fitfee'];
+
+                $order->field_buyer_com['und'][0]['value'] = $commisions['buycom'];
+                $order->field_fitmoo_com['und'][0]['value'] = $commisions['fitcom'];
+
+                /**
+                 * The new total field is wrong...we need to figure out what we want to do with this
+                 */
+                $order->field_new_total['und'][0]['value'] = ($product->commerce_price['und'][0]['amount'] * $qty) - ($fitmoo_fee);
+
+                $order->field_seller_email['und'][0]['value'] = $seller->mail;
+                $order->field_seller['und'][0]['uid'] = $product->uid;
+                $order->field_referer_com['und'][0]['value'] = $commisions["referercom"];
+
+                //send email to seller
+                $total = commerce_currency_amount_to_decimal($product->commerce_price['und'][0]['amount'], 'USD');
+                $info['qty'] = $line_item->quantity;
+                $info['uri'] = $product->field_image['und'][0]['uri'];
+                $term = taxonomy_term_load($product->field_size['und'][0]['tid']);
+                $info['size'] = $term->name;
+
+                $info['orderID'] = $order->order_id;
+                $buyer = user_load($order->uid);
+                $info['buyerEmail'] = $buyer->mail;
+                $info['product'] = $product->title;
+                $info['orderDate'] = $order->changed;
+                $info['total'] = $total;
+            } else if ($line_item->type == 'shipping') {
+                $info['shipping'] = commerce_currency_amount_to_decimal($line_item->commerce_unit_price['und'][0]['amount'], 'USD');
+            }
 
         }
+        $info['ordertotal'] = commerce_currency_amount_to_decimal($order->commerce_order_total['und'][0]['amount'], 'USD');
 
+        /**
+         * TODO change the values of keys to full values (i.e. $fitperc should be $fitmoo_percentage, etc.)
+         */
+        $info['fitperc'] = $commisions['fitperc'];
+        $info['fitcom'] = $commisions['fitcom'];
+        $info['sellperc'] = $commisions['sellperc'];
+        $info['sellcom'] = $commisions['sellcom'];
+        $info['buyperc'] = $commisions['buyperc'];
+        $info['buycom'] = $commisions['buycom'];
+        //$info['fitfee'] = $fitmoo_fee / 100;
+        $info['fitfee'] = $commisions['fitmoo_fee'];
+        $info['qty'] = $qty;
+
+        $shipping = commerce_customer_profile_load($order->commerce_customer_shipping['und'][0]['profile_id']);
+
+        $info['shipto'] = $shipping->commerce_customer_address['und'][0];
+
+        fitmoo_checkout_seller_email($product->uid, $info);
+        fitmoo_checkout_buyer_email($order->uid, $info);
+        /**
+         * TODO Determine if we want to send a referer email
+         */
+
+        commerce_order_save($order);
+
+    }catch (Exception $e) {
+        $transaction->rollback();
+        watchdog_exception(__FILE__, $e);
     }
-    $info['ordertotal'] = commerce_currency_amount_to_decimal($order->commerce_order_total['und'][0]['amount'],'USD');
 
-    $info['fitperc'] = $commisions['fitperc'];
-    $info['fitcom'] = $commisions['fitcom'];
-    $info['sellperc'] = $commisions['sellperc'];
-    $info['sellcom'] = $commisions['sellcom'];
-    $info['buyperc'] = $commisions['buyperc'];
-    $info['buycom'] = $commisions['buycom'];
-    $info['fitfee'] =  $fitmoo_fee/100;
-    $info['qty'] =  $qty;
-
-
-    $shipping = commerce_customer_profile_load($order->commerce_customer_shipping['und'][0]['profile_id']);
-
-    $info['shipto'] = $shipping->commerce_customer_address['und'][0];
-
-    fitmoo_checkout_seller_email($product->uid,$info);
-    fitmoo_checkout_buyer_email($order->uid,$info);
-
-    commerce_order_save($order);
 }
 
 function fitmoo_checkout_commerce_cart_product_prepare($order, $product, $quantity) {
@@ -1178,7 +1482,7 @@ function fitmoo_checkout_buyer_email($uid,$info){
     $message = drupal_mail($module, $key, $to, $language, $params, $from, FALSE);
 
 
-    $message['subject'] = "Thank you for your order #".$info['orderID']."  at Fitmoo.com";
+    $message['subject'] = "Thank you for your order #".$info['orderID']." at Fitmoo.com";
 
 
     $body = theme('buyeremail',$info);
@@ -1316,11 +1620,12 @@ function fitmoo_checkout_test_email(){
                 'productType' => $product->type,
                 'qty' => $qty,
                 'ordertotal' => commerce_currency_amount_to_decimal($order->commerce_order_total['und'][0]['amount'],'USD'),
+                'referer_id' => $order->referer
             );
             print_r($params);
             // Grant userpoints programmatically.
             $commisions = fitmoo_checkout_calc_comisions($params);
-
+            //$commisions = fitmoo_checkout_calculate_commisions($params);
             print_r($commisions);die();
             $seller = user_load($product->uid);
             $fitmoo_fee = $commisions['buycom'] + $commisions['fitcom'];

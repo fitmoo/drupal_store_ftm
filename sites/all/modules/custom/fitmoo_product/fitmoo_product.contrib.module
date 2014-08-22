@@ -474,7 +474,7 @@ function commerce_product_type_to_arg($type) {
  * @return
  *   A product object with all default fields initialized.
  */
-function commerce_product_new($type = '') {
+function commerce_product_new($type = '') {error_log(__FILE__." ".__FUNCTION__);
     return entity_get_controller('commerce_product')->create(array('type' => $type));
 }
 
@@ -487,7 +487,7 @@ function commerce_product_new($type = '') {
  * @return
  *   SAVED_NEW or SAVED_UPDATED depending on the operation performed.
  */
-function commerce_product_save($product) {
+function commerce_product_save($product) {error_log(__FILE__." ".__FUNCTION__);
     return entity_get_controller('commerce_product')->save($product);
 }
 

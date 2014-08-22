@@ -351,7 +351,6 @@ function add_manual_shipping_line_item($order, $data) {
     $temp->weight=2;
     $order->shipping_rates['example_shipping_service']=$temp;
 
-
 //    $shipping_service_name= 'example_shipping_service';
 //
 //    $shipping_service = commerce_shipping_service_load($shipping_service_name);
@@ -364,9 +363,12 @@ function add_manual_shipping_line_item($order, $data) {
 //        return;
 //    }
 
-    $order->shipping_rates['example_shipping_service']->data['shipping_service']['base_rate']['amount'] = $shipping_types_array[$product->type]*100;
-    $order->shipping_rates['example_shipping_service']->commerce_unit_price['und'][0]['amount'] = $shipping_types_array[$product->type]*100;
-    $order->shipping_rates['example_shipping_service']->commerce_unit_price['und'][0]['data']['components'][0]['price']['amount'] = $shipping_types_array[$product->type]*100;
+    //set the shipping as a line item
+    $tempOrderShippingAmount = $product->field_shipping_buyer_amount['und'][0]['value']; //$product->field_shipping_buyer_price->value;
+    $order->shipping_rates['example_shipping_service']->data['shipping_service']['base_rate']['amount'] = $tempOrderShippingAmount; //$shipping_types_array[$product->type]*100;
+    $order->shipping_rates['example_shipping_service']->commerce_unit_price['und'][0]['amount'] = $tempOrderShippingAmount; //$shipping_types_array[$product->type]*100;
+    $order->shipping_rates['example_shipping_service']->commerce_unit_price['und'][0]['data']['components'][0]['price']['amount'] = $tempOrderShippingAmount; //$shipping_types_array[$product->type]*100;
+
     // Extract the unit price from the calculated rate.
     $rate_line_item = $order->shipping_rates['example_shipping_service'];
     $rate_line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $rate_line_item);

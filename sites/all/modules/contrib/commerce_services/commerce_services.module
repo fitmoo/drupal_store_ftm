@@ -12,7 +12,7 @@
 function commerce_services_services_resources() {
   $resources = array();
 
-  if (module_exists('node') && module_exists('commerce_product_reference')) {
+  if (module_exists('node') && module_exists('commerce_product_reference')) {error_log("hi colin");
     // Define a resource for product display nodes, which returns node and
     // product data together that is more useful for building complex Add to
     // Cart forms than just product data.
@@ -1871,7 +1871,7 @@ function commerce_services_object_filter($object, $fields) {
  *   key being the property name and the value being the corresponding schema
  *   field on the entity type's base table.
  */
-function commerce_services_entity_type_properties($entity_type) {
+function commerce_services_entity_type_properties($entity_type) {error_log(__FILE__);error_log(__FUNCTION__);error_log("entity_type: ".serialize($entity_type));
   $properties = drupal_static(__FUNCTION__);
 
   if (!isset($properties[$entity_type])) {
@@ -1893,7 +1893,7 @@ function commerce_services_entity_type_properties($entity_type) {
       $properties[$entity_type] += array('revision', 'log');
     }
   }
-
+    error_log("properties[entity_type]: ".serialize($properties[$entity_type]));
   return $properties[$entity_type];
 }
 
@@ -2069,7 +2069,7 @@ function commerce_services_validate_field_value($entity_type, $entity, $field_na
  */
 function commerce_services_update_field_value($entity_type, $entity, $field_info, $value, $langcode = NULL, $delta = NULL) {
   $field_name = $field_info['field_name'];
-
+    error_log(__FILE__);error_log(__FUNCTION__);error_log("entity_type: ".serialize($entity_type));error_log("value: ".serialize($value));error_log("columns: ".serialize($field_info["columns"]));
   // If the value given is an array...
   if (is_array($value)) {
     // Ensure the keys given for the value array all match columns in the field
@@ -2083,10 +2083,10 @@ function commerce_services_update_field_value($entity_type, $entity, $field_info
     // value to be an array keyed by the column name.
     $value = array(key($field_info['columns']) => $value);
   }
-  else {
+  else {error_log(__FILE__." ".__FUNCTION__." ".__LINE__." the error is happening");
     // Return an error if an array was given for a single column field instead
     // of a scalar.
-    return services_error(t('Invalid @field value given', array('@field' => $field_name)), 400);
+    return services_error(t('Invalid @field value given #2', array('@field' => $field_name)), 400);
   }
 
   // Default to the entity language if $langcode is not set.
@@ -2453,7 +2453,16 @@ function commerce_services_update_entity($entity_type, $entity_id, $data, $flatt
  *   flattened as in GET requests; accepts true or false, defaults to true.
  */
 function commerce_services_set_field_values($entity_type, $entity, $data, $flatten_fields) {
-    try {
+    /*
+    error_log("-----");
+    error_log("file: ".__FILE__);
+    error_log("function: ".__FUNCTION__);
+    error_log("entity_type: ".serialize($entity_type));
+    error_log("entity: ".serialize($entity));
+    error_log("data: ".serialize($data));
+    error_log("flatten_fields: ".$flatten_fields);
+    */
+    //try {
         $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
         $properties = entity_get_property_info($entity_type);
         $bundle = field_extract_bundle($entity_type, $entity);
@@ -2462,7 +2471,6 @@ function commerce_services_set_field_values($entity_type, $entity, $data, $flatt
         // changing IDs and other immutable properties of the entity.
         $entity_info = entity_get_info($entity_type);
         $entity_keys = array_diff_key($entity_info['entity keys'], array('label' => ''));
-
         $protected_properties = array_values($entity_keys);
 
         // Loop over the data submitted with the request.
@@ -2485,7 +2493,7 @@ function commerce_services_set_field_values($entity_type, $entity, $data, $flatt
                     $entity->{$key} = $value;
                     $entity->revision = TRUE;
                 } else {
-                    return services_error(t('Invalid @property value given', array('@property' => $key)), 400);
+                    return services_error(t('Invalid @property value given #4', array('@property' => $key)), 400);
                 }
             } else {
                 // Look for the key as a field name in the entity type's field list.
@@ -2538,7 +2546,7 @@ function commerce_services_set_field_values($entity_type, $entity, $data, $flatt
                                     if ($langcode != LANGUAGE_NONE && !in_array($langcode, array_keys(language_list()))) {
                                         return services_error(t('Unknown language @langcode in @field value', array('@langcode' => $langcode, '@field' => $field_name)), 400);
                                     } elseif (!is_array($items)) {
-                                        return services_error(t('Invalid @field value given', array('@field' => $field_name)), 400);
+                                        return services_error(t('Invalid @field value given #3', array('@field' => $field_name)), 400);
                                     }
 
                                     foreach ($items as $delta => $item) {
@@ -2598,9 +2606,14 @@ function commerce_services_set_field_values($entity_type, $entity, $data, $flatt
 
         // @todo Post-process textfields by invoking text_field_load() on their values
         // to get the updated summary and safe_value values.
-    }catch(Exception $e){
-        error_log("exception: ".$e->getMessage());
-    }
+    //}catch(Exception $e){
+        //error_log("-----");
+        //error_log("file: ".__FILE__);
+        //error_log("function: ".__FUNCTION__);
+        //error_log("exception: ".$e->getMessage());
+        //error_log("-----");
+
+    //}
 }
 
 /**

@@ -99,7 +99,6 @@ function commerce_services_product_create($data, $flatten_fields) {
           $product_node->{$key}= $value;
       }
 
-
       foreach($prod_array as $key=>$prod){
           //========CREATE_PRODUCT_ITEM
           if (!empty($prod['size'])) {
@@ -197,6 +196,51 @@ function commerce_services_product_create($data, $flatten_fields) {
               unset($prod['image']);
           }
 
+          error_log("-----");
+          error_log("file: ".__FILE__);
+          error_log("function: ".__FUNCTION__);
+          error_log("product: ".serialize($prod));
+          error_log("-----");
+
+          //attempt to save shipping info
+
+          if(isset($prod['shipping_type_id'])) {
+              $prod['field_shipping_type_id'] = trim($prod['shipping_type_id']);
+              error_log("shipping_type_id: " . trim($prod['shipping_type_id']));
+              unset($prod['shipping_type_id']);
+          }
+                /*-------------------------------*/
+
+              $prod['field_shipping_full_amount'] = trim($prod['shipping_full_amount']);
+              error_log("shipping_full_amount: ".$prod['shipping_full_amount']);
+              error_log(gettype($prod['shipping_full_amount']));
+              unset($prod['shipping_full_amount']);
+
+              $prod['field_shipping_buyer_amount'] = trim($prod['shipping_buyer_amount']);
+              error_log("shipping_buyer_amount: ".trim($prod['shipping_buyer_amount']));
+              unset($prod['shipping_buyer_amount']);
+
+/*
+          if(isset($prod['shipping_total_amount'])) {
+              $prod['field_shipping_total_amount']['und'][0] = (array)$prod['shipping_total_amount'];
+              error_log("shipping_total_amount: " . $prod['shipping_total_amount']);
+              unset($prod['shipping_total_amount']);
+          }
+
+          if(isset($prod['shipping_purchaser_amount'])) {
+              $prod['field_shipping_purchaser_amount'] = trim($prod['shipping_purchaser_amount']);
+              error_log("shipping_purchaser_amount: ".trim($prod['shipping_purchaser_amount']));
+              unset($prod['shipping_purchaser_amount']);
+          }
+*/
+          error_log("-----");
+          error_log("file: ".__FILE__);
+          error_log("function: ".__FUNCTION__);
+          error_log("product_item: ".serialize($product_item));
+          error_log("prod: ".serialize($prod));
+          error_log("flatten_fields: ".serialize($flatten_fields));
+          error_log("-----");
+
           // Set the field and property data and save the product.
           commerce_services_set_field_values('commerce_product', $product_item, $prod, $flatten_fields);
           commerce_product_save($product_item);
@@ -214,10 +258,15 @@ function commerce_services_product_create($data, $flatten_fields) {
           //========END_CREATE_PRODUCT_ITEM
           $product_node->field_product['und'][$key]['product_id'] = $product_item->product_id;
       }
+      error_log("-----");
+      error_log("file: ".__FILE__);
+      error_log("function: ".__FUNCTION__);
+      error_log("product_node: ".serialize($product_node));
+      error_log("-----");
       node_save($product_node);
       return $product_node;
   } else {
-
+    error_log("this is the else part of ".__FUNCTION__);
       if (!empty($data['size'])) {
           $res = field_info_instances('commerce_product', $data['type']);
           foreach ($res as $key1=>$value1){
@@ -314,7 +363,6 @@ function commerce_services_product_create($data, $flatten_fields) {
           unset($data['image-url']);
           unset($data['image']);
       }
-
 
       // Set the field and property data and save the product.
       commerce_services_set_field_values('commerce_product', $product, $data, $flatten_fields);
