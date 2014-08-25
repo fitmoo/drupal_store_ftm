@@ -614,6 +614,7 @@ function fitmoo_checkout_calc_comisions($params){
  */
 function fitmoo_checkout_calculate_commissions($params){
 
+
     /**
      * For now these are hard coded due to not all of this being in the database
      * In the database they are stored a decimal number, so the division is done here
