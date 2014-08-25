@@ -135,8 +135,9 @@ function commerce_services_line_item_create($data, $flatten_fields) {
     if (!empty($data['endorser_drupal_id'])){
         $_SESSION['endorser_drupal_id'] = $data['endorser_drupal_id'];
         $order->field_referer['und'][0]['uid'] = $data['endorser_drupal_id'];
-        unset($data['endorser_drupal_id']);
     }
+
+    unset($data['endorser_drupal_id']);
 
   if ($data['type'] != 'shipping') {
 
