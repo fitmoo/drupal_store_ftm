@@ -77,7 +77,7 @@ function commerce_services_score_retrieve($uid) {
 	}
 	
 	unset($user_object);
-	
+	error_log("result: ".serialize($result));
     return $result;
 }
 

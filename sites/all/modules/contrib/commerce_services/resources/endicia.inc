@@ -14,6 +14,11 @@
 function commerce_services_endicia_index($fields) {
     global $user;
 
+    error_log(__FILE__);
+    error_log(__FUNCTION__);
+    error_log(serialize("fields: ".$fields));
+    error_log($_REQUEST['mail_class']);
+
 //    $file = 'endicia_labels/111.txt';
 //    $post = file_get_contents('php://input');
 //    $res = $post."   REQUEST =". $_SERVER['REQUEST_URI'];
@@ -28,11 +33,14 @@ function commerce_services_endicia_index($fields) {
     if (!empty($_SESSION['endicia'])) {
        module_load_include('module', 'endicia',drupal_get_path('module', 'endicia'));
        module_load_include('module', 'endicia_ui',drupal_get_path('module', 'endicia_ui'));
+        error_log("_SESSION[endicia]: ".serialize($_SESSION['endicia']));
        $result = _endicia_ui_print_label_confirm_form($_SESSION['endicia']);
        if ($result) {
             $result['values']['mail_class'] = $_REQUEST['mail_class'];
             $result['values']['submit'] = 'Confirm shipment';
             $result['values']['op'] = 'Confirm shipment';
+            error_log(" ");
+            error_log("result: ".serialize($result));
             return _endicia_ui_print_label_confirm_form_submit($result);
        } else {
             return services_error(t('Some error'));
@@ -367,7 +375,7 @@ function _endicia_ui_print_label_confirm_form($form_state) {
 }
 
 
-function _endicia_ui_print_label_confirm_form_submit($form_state) {
+function _endicia_ui_print_label_confirm_form_submit($form_state) {error_log("form_state: ".serialize($form_state));
     global $user;
     $origin = $_SESSION['endicia']['pickup_address'];
     $destination = $_SESSION['endicia']['delivery_address'];
@@ -610,7 +618,7 @@ XML;
 
     $curl_result = curl_exec ($curl_handle) or die ("There has been a CURL_EXEC error");
 
-
+    error_log($curl_result);
 
 
     curl_close ($curl_handle);

@@ -267,7 +267,7 @@ setlocale(LC_MONETARY, 'en_US');
         <section class="mailtext">
             <div class="section-wrapper clearfix">
                 <div class="content-div">
-                    <p>Good news ! <?php print $buyerEmail; ?> purchased <a href=""><?php print $product;?></a> from your Fitmoo store. For details and instructions to ship or complete this order, please visit <a href="<?php print $redirect_base;?>/dashboard/sales">your sales dashboard</a> on Fitmoo.com. Please be advised that this transaction will automatically be cancelled if not shipped within  <b>5 days</b></p>
+                    <p>Good news! <?php print $buyerEmail; ?> purchased <a href=""><?php print $product;?></a> from your Fitmoo store. For details and instructions to ship or complete this order, please visit <a href="<?php print $redirect_base;?>/dashboard/sales">your sales dashboard</a> on Fitmoo.com. Please be advised that this transaction will automatically be cancelled if not shipped within  <b>5 days</b></p>
                 </div>
                 <div class="content-div" style="padding-top: 20px;">
                 <h1>Order Details</h1>
@@ -319,11 +319,10 @@ setlocale(LC_MONETARY, 'en_US');
                     <div class="lcolumn">
                             <div class="lcolumn">
                                 <div style="font-weight: bold;">Please mail the product to:</div>
-			                   
-			                        <div><?php print $shipto['name_line'];?></div>
-			                        <div><?php print $shipto['thoroughfare'];?> <?php print $shipto['premise'];?></div>
-			                        <div><?php print $shipto['locality'];?>, <?php print $shipto['administrative_area'];?> <?php print $shipto['postal_code'];?> <?php print $shipto['country'];?></div>
-			                   
+                                <div><?php print_r($shipto);?></div>
+                                <div><?php print $shipto['name_line'];?></div>
+                                <div><?php print $shipto['thoroughfare'];?> <?php print $shipto['premise'];?></div>
+                                <div><?php print $shipto['locality'];?>, <?php print $shipto['administrative_area'];?> <?php print $shipto['postal_code'];?> <?php print $shipto['country'];?></div>
                             </div>
                     </div>
                     <div class="rcolumn">
@@ -336,6 +335,16 @@ setlocale(LC_MONETARY, 'en_US');
                             <div class="lcolumn">Fitmoo Service Charge</div>
                             <div class="rcolumn"><?php print money_format('%i',$fitfee);?></div>
                         </div>
+                        <div>
+                            <div class="lcolumn">Fitmoo Commission</div>
+                            <div class="rcolumn"><?php print money_format('%i',$fitcom);?></div>
+                        </div>
+                        <?php if(isset($referercom) && ($referercom > 0)){?>
+                        <div>
+                            <div class="lcolumn">Endorser Commission</div>
+                            <div class="rcolumn"><?php print money_format('%i',$referercom);?></div>
+                        </div>
+                        <?php }?>
                         <div>
                             <div class="lcolumn">Your Profit</div>
                             <div class="rcolumn"><?php print money_format('%i',$sellcom);?></div>

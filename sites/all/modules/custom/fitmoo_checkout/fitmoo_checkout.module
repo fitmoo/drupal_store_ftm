@@ -885,6 +885,9 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
                 $order->field_seller['und'][0]['uid'] = $product->uid;
                 $order->field_referer_com['und'][0]['value'] = $commisions["referercom"];
 
+                //we get shipping type id from the product
+                $order->field_shipping_type_id['und'][0]['value'] = $product->field_shipping_type_id['und'][0]['value'];
+
                 //send email to seller
                 $total = commerce_currency_amount_to_decimal($product->commerce_price['und'][0]['amount'], 'USD');
                 $info['qty'] = $line_item->quantity;
@@ -894,6 +897,8 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
 
                 $info['orderID'] = $order->order_id;
                 $buyer = user_load($order->uid);
+
+                //$info['buyerName'] = $buyer->name;
                 $info['buyerEmail'] = $buyer->mail;
                 $info['product'] = $product->title;
                 $info['orderDate'] = $order->changed;
@@ -915,8 +920,9 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
         $info['buyperc'] = $commisions['buyperc'];
         $info['buycom'] = $commisions['buycom'];
         //$info['fitfee'] = $fitmoo_fee / 100;
-        $info['fitfee'] = $commisions['fitmoo_fee'];
+        $info['fitfee'] = $commisions['fitfee'];
         $info['qty'] = $qty;
+        $info['referercom'] = $commisions['referercom'];
 
         $shipping = commerce_customer_profile_load($order->commerce_customer_shipping['und'][0]['profile_id']);
 
@@ -1377,6 +1383,7 @@ function fitmoo_checkout_sold_by(){
             $product = commerce_product_load($temp[0]['product_id']);
 
             $seller = user_load($product->uid);
+            error_log("seller: ".serialize($seller));
             return $seller->mail;
 
         }

@@ -63,6 +63,11 @@ function commerce_services_product_retrieve_access($product_id) {
  * Creates a new product.
  */
 function commerce_services_product_create($data, $flatten_fields) {
+    error_log(__FILE__);
+    error_log(__FUNCTION__);
+    error_log("-----------------------");
+    error_log(serialize(debug_backtrace()));
+    error_log("------------------------");
   // Ensure the request specifies a unique, valid SKU.
   global $user;
   if (!empty($data['node']) and ($data['node'] == "true")) {

@@ -12,7 +12,7 @@
 function commerce_services_services_resources() {
   $resources = array();
 
-  if (module_exists('node') && module_exists('commerce_product_reference')) {error_log("hi colin");
+  if (module_exists('node') && module_exists('commerce_product_reference')) {
     // Define a resource for product display nodes, which returns node and
     // product data together that is more useful for building complex Add to
     // Cart forms than just product data.
@@ -1871,7 +1871,7 @@ function commerce_services_object_filter($object, $fields) {
  *   key being the property name and the value being the corresponding schema
  *   field on the entity type's base table.
  */
-function commerce_services_entity_type_properties($entity_type) {error_log(__FILE__);error_log(__FUNCTION__);error_log("entity_type: ".serialize($entity_type));
+function commerce_services_entity_type_properties($entity_type) {
   $properties = drupal_static(__FUNCTION__);
 
   if (!isset($properties[$entity_type])) {
@@ -2453,7 +2453,7 @@ function commerce_services_update_entity($entity_type, $entity_id, $data, $flatt
  *   flattened as in GET requests; accepts true or false, defaults to true.
  */
 function commerce_services_set_field_values($entity_type, $entity, $data, $flatten_fields) {
-    /*
+
     error_log("-----");
     error_log("file: ".__FILE__);
     error_log("function: ".__FUNCTION__);
@@ -2461,7 +2461,7 @@ function commerce_services_set_field_values($entity_type, $entity, $data, $flatt
     error_log("entity: ".serialize($entity));
     error_log("data: ".serialize($data));
     error_log("flatten_fields: ".$flatten_fields);
-    */
+
     //try {
         $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
         $properties = entity_get_property_info($entity_type);
