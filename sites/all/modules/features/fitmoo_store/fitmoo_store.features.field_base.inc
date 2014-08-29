@@ -1421,7 +1421,7 @@ function fitmoo_store_field_default_field_bases() {
     'entity_types' => array(),
     'field_name' => 'field_shipping_buyer_amount',
     'field_permissions' => array(
-      'type' => 1,
+      'type' => 0,
     ),
     'foreign keys' => array(),
     'indexes' => array(),
@@ -1430,10 +1430,39 @@ function fitmoo_store_field_default_field_bases() {
     'settings' => array(
       'decimal_separator' => '.',
       'precision' => 10,
-      'scale' => 2,
+      'scale' => 0,
     ),
     'translatable' => 0,
     'type' => 'number_decimal',
+  );
+
+  // Exported field_base: 'field_shipping_carrier'
+  $field_bases['field_shipping_carrier'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_shipping_carrier',
+    'foreign keys' => array(
+      'format' => array(
+        'columns' => array(
+          'format' => 'format',
+        ),
+        'table' => 'filter_format',
+      ),
+    ),
+    'indexes' => array(
+      'format' => array(
+        0 => 'format',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'text',
+    'settings' => array(
+      'max_length' => 255,
+    ),
+    'translatable' => 0,
+    'type' => 'text',
   );
 
   // Exported field_base: 'field_shipping_full_amount'
@@ -1444,7 +1473,7 @@ function fitmoo_store_field_default_field_bases() {
     'entity_types' => array(),
     'field_name' => 'field_shipping_full_amount',
     'field_permissions' => array(
-      'type' => 1,
+      'type' => 0,
     ),
     'foreign keys' => array(),
     'indexes' => array(),
@@ -1453,7 +1482,7 @@ function fitmoo_store_field_default_field_bases() {
     'settings' => array(
       'decimal_separator' => '.',
       'precision' => 10,
-      'scale' => 2,
+      'scale' => 0,
     ),
     'translatable' => 0,
     'type' => 'number_decimal',
@@ -1499,7 +1528,7 @@ function fitmoo_store_field_default_field_bases() {
     'entity_types' => array(),
     'field_name' => 'field_shipping_type_id',
     'field_permissions' => array(
-      'type' => 1,
+      'type' => 0,
     ),
     'foreign keys' => array(),
     'indexes' => array(),

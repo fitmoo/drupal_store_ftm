@@ -111,6 +111,7 @@ features[field_base][] = field_seller
 features[field_base][] = field_seller_email
 features[field_base][] = field_service_type
 features[field_base][] = field_shipping_buyer_amount
+features[field_base][] = field_shipping_carrier
 features[field_base][] = field_shipping_full_amount
 features[field_base][] = field_shipping_label_url
 features[field_base][] = field_shipping_type_id
