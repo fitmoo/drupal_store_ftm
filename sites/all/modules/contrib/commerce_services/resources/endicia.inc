@@ -133,8 +133,19 @@ function _endicia_print_label_data_validate($data) {
     if (empty($data['package_info']['weight'])) {
         $data['package_info']['weight'] = variable_get($line_item->commerce_product_entities[$line_item->commerce_product['und'][0]['product_id']]->type."_w", "0");
     }
+
+    //set the size of the box
     if (empty($data['package_info']["mail_shape"])) {
+
+        if($order->field_shipping_type_id['und'][0]['value'] == 1){
             $data['package_info']["mail_shape"] = 'SmallFlatRateBox';
+        }elseif($order->field_shipping_type_id['und'][0]['value'] == 2){
+            $data['package_info']["mail_shape"] = 'MediumFlatRateBox';
+        }elseif($order->field_shipping_type_id['und'][0]['value'] == 3){
+            $data['package_info']["mail_shape"] = 'LargeFlatRateBox';
+        }else{
+            //custom is id 4 so don't do a thing
+        }
     }
     if (empty($data['package_info']['description'])) {
         $data['package_info']['description'] = $line_item->commerce_product_entities[$line_item->commerce_product['und'][0]['product_id']]->type;
@@ -617,8 +628,6 @@ XML;
     curl_setopt ($curl_handle, CURLOPT_POSTFIELDS, $requestData);
 
     $curl_result = curl_exec ($curl_handle) or die ("There has been a CURL_EXEC error");
-
-    error_log($curl_result);
 
 
     curl_close ($curl_handle);

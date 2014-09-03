@@ -201,11 +201,11 @@ function commerce_services_product_create($data, $flatten_fields) {
               unset($prod['image']);
           }
 
-          error_log("-----");
-          error_log("file: ".__FILE__);
-          error_log("function: ".__FUNCTION__);
-          error_log("product: ".serialize($prod));
-          error_log("-----");
+          //error_log("-----");
+          //error_log("file: ".__FILE__);
+          //error_log("function: ".__FUNCTION__);
+          //error_log("product: ".serialize($prod));
+          //error_log("-----");
 
           //attempt to save shipping info
 

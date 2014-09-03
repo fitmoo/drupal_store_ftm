@@ -12,7 +12,7 @@
  * @see commerce_services_index_entities()
  */
 function commerce_services_redemption_index($fields)
-{
+{   error_log(__FILE__." ".__FUNCTION__);
     global $user;
     if (empty($user->uid)) {
         return services_error(t('user not found'), 404);
