@@ -108,15 +108,15 @@ $redirect_base = variable_get('anonymous_redirect_base', '');
                             <div class="field-type-details">
                                 <div style="float: left; width: 50%;">
                                     <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansmedium';"><b><?php print $ProductName; ?></b></div>
-                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';">Order #:&nbsp;<?php print $orderId;?></div>
+                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';">Order #:&nbsp;<?php print $OrderId;?></div>
                                     <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';">Status:&nbsp;<?php print $ShippingStatus;?></div>
                                     <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';">Tracking #:&nbsp;<?php print $TrackingNum; ?></a></div>
                                 </div>
                                 <div style="float: right; width: 50%;">
                                     <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';">Send to:</div>
                                     <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $ShipToName;?></b></div>
-                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $ShipToAdress; ?></b></div>
-                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $ShipToAdress2; ?></b></div>
+                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $ShipToAddress; ?></b></div>
+                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $ShipToAddress2; ?></b></div>
                                 </div>
                             </div>
                         </div>

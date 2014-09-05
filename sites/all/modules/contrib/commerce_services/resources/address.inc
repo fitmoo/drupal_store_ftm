@@ -77,6 +77,7 @@ function commerce_services_address_create_access() {
  * @see commerce_services_update_entity()
  */
 function commerce_services_address_update($pid, $data) {
+    error_log(__FILE__." ".__FUNCTION__);
     // Ensure the request specifies a unique, valid SKU.
     global $user;
     $profile = commerce_customer_profile_load($pid);
@@ -88,6 +89,10 @@ function commerce_services_address_update($pid, $data) {
     }
 
     unset($data['type']);
+
+    $profile->field_customer_name["und"][0]["value"] = $data["field_customer_name"];
+    $profile->field_phone["und"][0]["value"] = $data["field_phone"];
+
     foreach ($data as $key=>$value) {
         $profile->commerce_customer_address['und'][0][$key] = $value;
     }

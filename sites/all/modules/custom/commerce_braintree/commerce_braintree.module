@@ -900,3 +900,14 @@ function commerce_braintree_create_merchant(){
 	print_r($result);
 	
 }
+
+
+/**
+ * Get all orders that have been placed in the last 28 days (which is 2419200 seconds)
+ */
+function commerce_braintree_cron(){
+    error_log(__FILE__ . " " . __FUNCTION__);
+    //just a test
+
+    error_log("commerce_braintree_cron has finished");
+}

@@ -47,6 +47,7 @@ function endicia_permission() {
  * Default is never delete the labels, keep them forever.
  */
 function endicia_cron() {
+    error_log(__FILE__." ".__FUNCTION__);
   $current_time = time();
   $cutoff = $current_time - variable_get('endicia_label_lifetime', 0);
   if ($cutoff == $current_time) {

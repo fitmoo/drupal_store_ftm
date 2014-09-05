@@ -50,7 +50,11 @@ class CommerceCustomerProfileEntityController extends DrupalCommerceEntityContro
    * @return
    *   SAVED_NEW or SAVED_UPDATED depending on the operation performed.
    */
-  public function save($profile, DatabaseTransaction $transaction = NULL) {
+  public function save($profile, DatabaseTransaction $transaction = NULL) {error_log(__FILE__." -> ".__FUNCTION__);
+
+      error_log(serialize($profile));
+
+
     if (!isset($transaction)) {
       $transaction = db_transaction();
       $started_transaction = TRUE;
@@ -63,10 +67,10 @@ class CommerceCustomerProfileEntityController extends DrupalCommerceEntityContro
       $profile->is_new = empty($profile->profile_id);
 
       // Set the timestamp fields.
-      if ($profile->is_new && empty($profile->created)) {
+      if ($profile->is_new && empty($profile->created)) {error_log("first");
         $profile->created = REQUEST_TIME;
       }
-      else {
+      else {error_log("second");
         // Otherwise if the profile is not new but comes from an entity_create()
         // or similar function call that initializes the created timestamp and
         // uid value to empty strings, unset them to prevent destroying existing

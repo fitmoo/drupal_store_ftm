@@ -70,30 +70,35 @@ function commerce_services_redemption_retrieve_access($redemption_id)
  * Creates a new redemption.
  */
 function commerce_services_redemption_create($data, $flatten_fields)
-{
+{   error_log(__FILE__." ".__FUNCTION__);
     //    $form, &$form_state, $order, $payment_method
 
     global $user;
     if (empty($user->uid)) {
+        error_log("1 failed");
         return services_error(t('Access to this operation not granted'), 401);
     }
 
     $user_fields = user_load($data['userID']);
     if (empty($user_fields)) {
+        error_log("2 failed");
         return services_error(t('User not found'), 401);
     }
     if (empty($data['amount'])) {
+        error_log("3 failed");
         return services_error(t('Enter amount pls'), 401);
     }
 	
-	if($data['amount'] > $user->field_balance_available['und'][0]['value']){
-	   return services_error(t('Requested amount is not available balance is: $'.field_balance_available['und'][0]['value']), 401);
+	if($data['amount'] > $user_fields->field_balance_available['und'][0]['value']){
+        error_log("4 failed:  ". serialize($user_fields). $user_fields->field_balance_available['und'][0]['value'] ." --- " . $data['amount'] );
+	   return services_error(t('Requested amount is not available balance is: $'.$user->field_balance_available['und'][0]['value']), 401);
 	}
 	
     if (!empty($data['check'])) {
         $transfer_type = 'check';
 
         if (empty($data['first_name']) or empty($data['last_name'])  or empty($data['thoroughfare']) or empty($data['country']) or empty($data['locality']) or empty($data['administrative_area']) or empty($data['postal_code'])) {
+            error_log("5 failed");
             return services_error(t('One of profile field is empty'), 401);
         }
         if (empty($data['premise'])) {
@@ -181,6 +186,7 @@ function commerce_services_redemption_create($data, $flatten_fields)
                     commerce_customer_profile_save($profilenew);
                     $profileId = $profilenew->profile_id;
                 } else {
+                    error_log("6 failed");
                     return services_error(t($e), 401);
                 }
 

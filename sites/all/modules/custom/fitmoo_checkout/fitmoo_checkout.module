@@ -1014,7 +1014,8 @@ function fitmoo_checkout_endiciaSendLabelTOSellerAndBuyer($order) {
             $info_buyer['uri'] = $product->field_image['und'][0]['uri'];
             $info_buyer['ProductName'] = $product->title;
             $info_buyer['TrackingNum'] = $order->field_tracking['und'][0]['value'];
-            $info_buyer['ShippingStatus'] = 'ORDER Status in progress';
+            //$info_buyer['ShippingStatus'] = 'ORDER Status in progress';
+            $info_buyer['ShippingStatus'] = 'Shipped';
 
             $info_buyer['OrderId'] = $order->order_id;
             $info_buyer['BuyerEmail'] = $buyer->mail;
@@ -1029,8 +1030,8 @@ function fitmoo_checkout_endiciaSendLabelTOSellerAndBuyer($order) {
     $info['ordertotal'] = commerce_currency_amount_to_decimal($order->commerce_order_total['und'][0]['amount'],'USD');
     $profile =  intval($order->commerce_customer_shipping['und'][0]['profile_id']);
 
-
     $shipping = commerce_customer_profile_load($profile);
+
     $info['shipto'] = $shipping->commerce_customer_address['und'][0];
 
     fitmoo_checkout_LabelEmail($order->field_seller_email['und'][0]['value'],$buyer->uid,$info,$info_buyer);
@@ -1545,7 +1546,7 @@ function fitmoo_checkout_LabelEmail($seller_email,$buyer_uid,$info,$info_buyer){
 
 
     $message['subject'] = "Your shipping label for #".$info['OrderId']." from ".$info['BuyerEmail']." at Fitmoo.com";
-
+    error_log(serialize($info));
     $body = theme('labelseller',$info);
 
     $message['body'] = array();
