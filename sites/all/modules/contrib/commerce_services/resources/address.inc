@@ -78,6 +78,7 @@ function commerce_services_address_create_access() {
  */
 function commerce_services_address_update($pid, $data) {
     error_log(__FILE__." ".__FUNCTION__);
+
     // Ensure the request specifies a unique, valid SKU.
     global $user;
     $profile = commerce_customer_profile_load($pid);

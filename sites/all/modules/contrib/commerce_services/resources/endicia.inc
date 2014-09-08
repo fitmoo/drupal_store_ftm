@@ -13,11 +13,14 @@
  */
 function commerce_services_endicia_index($fields) {
     global $user;
-
+    //TODO figure out how to not call this method when custom shipping is being used
     error_log(__FILE__);
     error_log(__FUNCTION__);
-    error_log(serialize("fields: ".$fields));
-    error_log($_REQUEST['mail_class']);
+    error_log("fields: ".serialize($fields));
+    error_log("_REQUEST: ".serialize($_REQUEST));
+    error_log("_GET: ".serialize($_GET));
+    error_log("_POST: ".serialize($_POST));
+    error_log("_SESSION: ".serialize($_SESSION));
 
 //    $file = 'endicia_labels/111.txt';
 //    $post = file_get_contents('php://input');
@@ -105,6 +108,11 @@ function commerce_services_endicia_create_access() {
  */
 function _endicia_print_label_data_validate($data) {
     global $user;
+
+    error_log(__FILE__);
+    error_log(__FUNCTION__);
+    error_log("data: ".serialize($data));
+
 //    $file = 'endicia_labels/111.txt';
 //    $post = file_get_contents('php://input');
 //    $res = $post."   REQUEST =". $_SERVER['REQUEST_URI'];

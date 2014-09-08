@@ -714,16 +714,16 @@ function fitmoo_checkout_calculate_commissions($params){
         }
     }
 
-    //error_log("order total (goods only): ".$total);
-    //error_log("order total (with shipping): ".$ordertotal);
-    //error_log("fitmoo percentage: ".$fitmoo_percentage);
-    //error_log("fitmoo fee: ".$fitmoo_fee);
-    //error_log("fitmoo commission: ".$fitmoo_commission);
-    //error_log("refferer percentage: ".$refferer_percentage);
-    //error_log("refferer commission: ".$refferer_commission);
-    //error_log("seller percentage: ".$seller_percentage);
-    //error_log("seller_commission: ".$seller_commission);
-
+    error_log("order total (goods only): ".$total);
+    error_log("order total (with shipping): ".$ordertotal);
+    error_log("fitmoo percentage: ".$fitmoo_percentage);
+    error_log("fitmoo fee: ".$fitmoo_fee);
+    error_log("fitmoo commission: ".$fitmoo_commission);
+    error_log("refferer percentage: ".$refferer_percentage);
+    error_log("refferer commission: ".$refferer_commission);
+    error_log("seller percentage: ".$seller_percentage);
+    error_log("seller_commission: ".$seller_commission);
+    error_log("shipping_difference: ".$shipping_difference);
     //drupal_exit();
 
     /**
@@ -879,7 +879,12 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
                 /**
                  * The new total field is wrong...we need to figure out what we want to do with this
                  */
-                $order->field_new_total['und'][0]['value'] = ($product->commerce_price['und'][0]['amount'] * $qty) - ($fitmoo_fee);
+                //$order->field_new_total['und'][0]['value'] = ($product->commerce_price['und'][0]['amount'] * $qty) - ($fitmoo_fee);
+
+                /**
+                 * This is the new way of determining the new total
+                 */
+                $order->field_new_total['und'][0]['value'] = $commisions['sellcom'];
 
                 $order->field_seller_email['und'][0]['value'] = $seller->mail;
                 $order->field_seller['und'][0]['uid'] = $product->uid;
