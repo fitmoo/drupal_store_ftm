@@ -319,7 +319,6 @@ setlocale(LC_MONETARY, 'en_US');
                     <div class="lcolumn">
                             <div class="lcolumn">
                                 <div style="font-weight: bold;">Please mail the product to:</div>
-                                <div><?php print_r($shipto);?></div>
                                 <div><?php print $shipto['name_line'];?></div>
                                 <div><?php print $shipto['thoroughfare'];?> <?php print $shipto['premise'];?></div>
                                 <div><?php print $shipto['locality'];?>, <?php print $shipto['administrative_area'];?> <?php print $shipto['postal_code'];?> <?php print $shipto['country'];?></div>
@@ -351,9 +350,11 @@ setlocale(LC_MONETARY, 'en_US');
                         </div>
                     </div>
                 </div>
+                <?php /* there isn't a landing page here and the seller needs to ok the sale before the label is dealt with
                 <div class="button-wrapper">
                     <a href="<?php print $redirect_base;?>/dashboard/sales/<?php print $orderID;?>" class="blue-button" id="edit-continue" name="op">Print Mailing Label</a>
                 </div>
+                */?>
 
             </div>
         </section>
