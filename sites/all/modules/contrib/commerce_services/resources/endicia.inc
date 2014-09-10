@@ -14,13 +14,6 @@
 function commerce_services_endicia_index($fields) {
     global $user;
     //TODO figure out how to not call this method when custom shipping is being used
-    error_log(__FILE__);
-    error_log(__FUNCTION__);
-    error_log("fields: ".serialize($fields));
-    error_log("_REQUEST: ".serialize($_REQUEST));
-    error_log("_GET: ".serialize($_GET));
-    error_log("_POST: ".serialize($_POST));
-    error_log("_SESSION: ".serialize($_SESSION));
 
 //    $file = 'endicia_labels/111.txt';
 //    $post = file_get_contents('php://input');
@@ -36,14 +29,11 @@ function commerce_services_endicia_index($fields) {
     if (!empty($_SESSION['endicia'])) {
        module_load_include('module', 'endicia',drupal_get_path('module', 'endicia'));
        module_load_include('module', 'endicia_ui',drupal_get_path('module', 'endicia_ui'));
-        error_log("_SESSION[endicia]: ".serialize($_SESSION['endicia']));
        $result = _endicia_ui_print_label_confirm_form($_SESSION['endicia']);
        if ($result) {
             $result['values']['mail_class'] = $_REQUEST['mail_class'];
             $result['values']['submit'] = 'Confirm shipment';
             $result['values']['op'] = 'Confirm shipment';
-            error_log(" ");
-            error_log("result: ".serialize($result));
             return _endicia_ui_print_label_confirm_form_submit($result);
        } else {
             return services_error(t('Some error'));
@@ -109,16 +99,13 @@ function commerce_services_endicia_create_access() {
 function _endicia_print_label_data_validate($data) {
     global $user;
 
-    error_log(__FILE__);
-    error_log(__FUNCTION__);
-    error_log("data: ".serialize($data));
-
 //    $file = 'endicia_labels/111.txt';
 //    $post = file_get_contents('php://input');
 //    $res = $post."   REQUEST =". $_SERVER['REQUEST_URI'];
 //    file_put_contents($file, $res, FILE_APPEND);
     //if ($data['order_id']) {}
     $order = _commerce_services_order_retrieve($data['order_id'], 1, false);
+
     //<!-- if ($order->uid != $user->uid) {
         //return services_error(t("User have no access to this order"));
     //} -->
@@ -228,6 +215,10 @@ function _endicia_print_label_data_validate($data) {
     }
     $_SESSION['endicia']['pickup_address'] = _endicia_get_address($data, 'pickup');
     $_SESSION['endicia']['delivery_address'] = _endicia_get_address($data, 'delivery');
+
+    $customer_name = $order->commerce_customer_shipping_entities[$order->commerce_customer_shipping['und'][0]['profile_id']]->field_customer_name['und'][0]['safe_value'];
+
+    $_SESSION['endicia']['delivery_address']->first_name = $customer_name;
 
     // Make API call, storing any results in session
     $destination = $_SESSION['endicia']['delivery_address'];
@@ -340,6 +331,7 @@ function _commerce_services_order_retrieve($order_id, $expand_entities, $flatten
     foreach ($item->commerce_line_items as $itemkey=>$itemvalue) {
         $item->commerce_line_items_data[$itemvalue] = commerce_services_retrieve_entity('commerce_line_item', $itemvalue, 1, true);
     }
+
     return $item;
 }
 
@@ -394,7 +386,7 @@ function _endicia_ui_print_label_confirm_form($form_state) {
 }
 
 
-function _endicia_ui_print_label_confirm_form_submit($form_state) {error_log("form_state: ".serialize($form_state));
+function _endicia_ui_print_label_confirm_form_submit($form_state) {
     global $user;
     $origin = $_SESSION['endicia']['pickup_address'];
     $destination = $_SESSION['endicia']['delivery_address'];

@@ -714,6 +714,7 @@ function fitmoo_checkout_calculate_commissions($params){
         }
     }
 
+    /*
     error_log("order total (goods only): ".$total);
     error_log("order total (with shipping): ".$ordertotal);
     error_log("fitmoo percentage: ".$fitmoo_percentage);
@@ -724,6 +725,7 @@ function fitmoo_checkout_calculate_commissions($params){
     error_log("seller percentage: ".$seller_percentage);
     error_log("seller_commission: ".$seller_commission);
     error_log("shipping_difference: ".$shipping_difference);
+    */
     //drupal_exit();
 
     /**
@@ -932,6 +934,14 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
         $shipping = commerce_customer_profile_load($order->commerce_customer_shipping['und'][0]['profile_id']);
 
         $info['shipto'] = $shipping->commerce_customer_address['und'][0];
+
+        /**
+         * TODO This is a total hack and we need to figure out what the hell is going on.
+         *It seems the name fields have been changed about a million times
+         *I have no idea where name_line came from...also no first or last names through the entire system
+         *No idea if we should be using "safe value" or not
+         */
+        $info['shipto']['name_line'] = $shipping->field_customer_name['und'][0]['safe_value'];
 
         fitmoo_checkout_seller_email($product->uid, $info);
         fitmoo_checkout_buyer_email($order->uid, $info);
@@ -1389,7 +1399,7 @@ function fitmoo_checkout_sold_by(){
             $product = commerce_product_load($temp[0]['product_id']);
 
             $seller = user_load($product->uid);
-            error_log("seller: ".serialize($seller));
+
             return $seller->mail;
 
         }
@@ -1551,7 +1561,7 @@ function fitmoo_checkout_LabelEmail($seller_email,$buyer_uid,$info,$info_buyer){
 
 
     $message['subject'] = "Your shipping label for #".$info['OrderId']." from ".$info['BuyerEmail']." at Fitmoo.com";
-    error_log(serialize($info));
+
     $body = theme('labelseller',$info);
 
     $message['body'] = array();
@@ -1563,8 +1573,6 @@ function fitmoo_checkout_LabelEmail($seller_email,$buyer_uid,$info,$info_buyer){
     $message = $system->format($message);
     // Send e-mail.
     $message['result'] = $system->mail($message);
-
-
 
     //=========BUYER_MAIL
     $module = 'fitmoo_checkout';

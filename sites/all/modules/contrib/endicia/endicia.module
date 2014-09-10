@@ -47,7 +47,7 @@ function endicia_permission() {
  * Default is never delete the labels, keep them forever.
  */
 function endicia_cron() {
-    error_log(__FILE__." ".__FUNCTION__);
+
   $current_time = time();
   $cutoff = $current_time - variable_get('endicia_label_lifetime', 0);
   if ($cutoff == $current_time) {
@@ -187,6 +187,7 @@ function _endicia_get_address($source, $type) {
   // TODO: Eventually, we should migrate to the proper names... We are
   // currently using UC-style address properties.
   $properties = array(
+      'name_line' => 'name_line',
     'first_name' => 'first_name',
     'last_name' => 'last_name',
     'company' => 'organisation_name',

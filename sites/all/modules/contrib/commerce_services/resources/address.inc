@@ -12,9 +12,14 @@
  * @see commerce_services_index_entities()
  */
 function commerce_services_address_index($fields) {
+    //error_log(__FILE__);
+    //error_log(__FUNCTION__);
+    //error_log("debug backtrace:".serialize(debug_backtrace()));
+    //error_log("fields: ".serialize($fields));
     global $user;
     $uid =  $user->uid;
     $profile_list = commerce_customer_profile_load_multiple($profile_ids = array(), array('uid'=>$uid), $reset = FALSE);
+    //error_log("profile_list: ".serialize($profile_list));
     return $profile_list;
 }
 
@@ -78,6 +83,7 @@ function commerce_services_address_create_access() {
  */
 function commerce_services_address_update($pid, $data) {
     error_log(__FILE__." ".__FUNCTION__);
+    error_log("Trying to update the address for $pid");
 
     // Ensure the request specifies a unique, valid SKU.
     global $user;
