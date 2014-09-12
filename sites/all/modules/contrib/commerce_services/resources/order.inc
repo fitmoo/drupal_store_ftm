@@ -12,7 +12,7 @@
  * @see commerce_services_index_entities()
  */
 function commerce_services_order_index($fields, $expand_entities, $flatten_fields, $filter, $filter_op, $sort_by, $sort_order, $limit, $offset) {
-
+error_log(__FILE__." ".__FUNCTION__);
   if (!empty($_REQUEST['seller'])) {
       $order_ids = commerce_services_order_seller();
       global $user;
@@ -170,6 +170,13 @@ function commerce_services_product_retrieve_access($product_id) {
 function commerce_services_order_update($order_id, $data, $flatten_fields) {
     global $user;
 
+    error_log("-------------------------");
+    error_log(__FILE__);
+    error_log(__FUNCTION__);
+    error_log("order_id: ".$order_id);
+    error_log("data: ".serialize($data));
+    error_log("flatten_fields: ".serialize($flatten_fields));
+    error_log("-------------------------");
 
     if(!empty($data['commerce_customer_shipping'])) {
       //  $profiles = commerce_customer_profile_load_multiple(array(), array('type' => 'shipping','uid' => $user->uid,'status'=> TRUE));

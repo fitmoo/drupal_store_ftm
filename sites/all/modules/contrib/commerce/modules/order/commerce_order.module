@@ -741,7 +741,26 @@ function commerce_order_new($uid = 0, $status = NULL, $type = 'commerce_order') 
  *   SAVED_NEW or SAVED_UPDATED depending on the operation performed.
  */
 function commerce_order_save($order) {
-  return entity_get_controller('commerce_order')->save($order);
+    if($order->status == "Completed:Accepted"){
+        error_log("order->status: ".$order->status);
+        if(!is_null($order->field_referer["und"]["0"]["uid"])){
+            error_log("order->field_referer: ".serialize($order->field_referer["und"]["0"]["uid"]));
+            error_log(serialize($order));
+            $referer = user_load($order->field_referer["und"]["0"]["uid"]);
+
+            if(!is_null($referer)){
+                error_log("referer: ".serialize($referer));
+                error_log("Send referer to: ".$referer->mail);
+
+                $info["body"] = "hello";
+
+                //this method is in the commerce_order.module
+                fitmoo_order_complete_referer_email($referer->uid, $info);
+            }
+        }
+    }
+
+    return entity_get_controller('commerce_order')->save($order);
 }
 
 /**

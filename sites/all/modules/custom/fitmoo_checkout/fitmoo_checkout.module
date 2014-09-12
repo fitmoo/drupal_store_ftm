@@ -64,6 +64,14 @@ function fitmoo_checkout_theme() {
             'template' => 'templates/buyeremail',
             'arguments' => array('data' => NULL),
         ),
+        'buyeremaileventsandservices' => array(
+            'template' => 'templates/buyeremaileventsandservices',
+            'arguments' => array('data' => NULL),
+        ),
+        'refereremail' => array(
+            'template' => 'templates/refereremail',
+            'arguments' => array('data' => NULL),
+        ),
         'labelseller' => array(
             'template' => 'templates/labelseller',
             'arguments' => array('data' => NULL),
@@ -821,23 +829,31 @@ function fitmoo_checkout_calculate_commissions($params){
  * Implements hook_commerce_checkout_complete().
  */
 function fitmoo_checkout_commerce_checkout_complete($order) {
+    error_log(__FILE__);
+    error_log(__FUNCTION__);
+    error_log("order: ".serialize($order));
     /**
      * Start transaction here
      * Note the transaction extends to functions called in this one, so fitmoo_checkout_calculate_commissions
      * is included in the transaction according to this: https://www.drupal.org/node/355875
      */
-
     $transaction = db_transaction();
 
     try {
 
         // Iterate through every commerce line item added in product.
         $info = array();
+        /**
+         * To determine which email we send we need to know how many line items there are
+         * If there are 2 there is shipping
+        */
+        $info["line_items"] = 0;
         foreach (field_get_items('commerce_order', $order, 'commerce_line_items') as $line_item_id) {
-
+            //
+            $info["line_items"]++;
             // Load commerce line item by line item id.
             $line_item = commerce_line_item_load($line_item_id['line_item_id']);
-
+            error_log("line_item: ".serialize($line_item));
             // We do not want to include shipping cost in userpoints.
             if ($line_item->type != 'shipping') {
                 // Load commerce product by product id.
@@ -943,12 +959,13 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
          */
         $info['shipto']['name_line'] = $shipping->field_customer_name['und'][0]['safe_value'];
 
+        //error_log("info[line_items]: ".$info["line_items"]);
+
         fitmoo_checkout_seller_email($product->uid, $info);
         fitmoo_checkout_buyer_email($order->uid, $info);
         /**
          * TODO Determine if we want to send a referer email
          */
-
         commerce_order_save($order);
 
     }catch (Exception $e) {
@@ -1494,8 +1511,6 @@ function fitmoo_checkout_buyer_email($uid,$info){
     $from = 'store@fitmoo.com';
     $to = $to_user->mail;
 
-
-
     $headers = array(
         'MIME-Version' => '1.0',
         'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
@@ -1505,11 +1520,82 @@ function fitmoo_checkout_buyer_email($uid,$info){
     $params['headers'] = $headers;
     $message = drupal_mail($module, $key, $to, $language, $params, $from, FALSE);
 
-
     $message['subject'] = "Thank you for your order #".$info['orderID']." at Fitmoo.com";
 
+    if($info["line_items"] > 1){//this is a product, which requires shipping
+        //error_log("SHIPPING");
+        $body = theme('buyeremail',$info);
+    }else{//this is a service, membership, event, etc and has no shipping
+        //error_log("NO SHIPPING");
+        $body = theme('buyeremaileventsandservices',$info);
+    }
+    //error_log("body: ".$body);
 
-    $body = theme('buyeremail',$info);
+    $message['body'] = array();
+    $message['body'][] = $body;
+
+    // Retrieve the responsible implementation for this message.
+    $system = drupal_mail_system($module, $key);
+    // Format the message body.
+    $message = $system->format($message);
+    // Send e-mail.
+    $message['result'] = $system->mail($message);
+    return TRUE;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function fitmoo_order_complete_referer_email($uid,$info){
+
+    error_log("uid: ".$uid);
+    error_log("info: ".serialize($info));
+
+    $module = 'fitmoo_checkout';
+    $key = 'order';
+    $language = language_default();
+    $params = array();
+    $send = TRUE;
+    $to_user = user_load($uid);
+    $from = 'store@fitmoo.com';
+    $to = $to_user->mail;
+
+    $headers = array(
+        'MIME-Version' => '1.0',
+        'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
+        'Content-Transfer-Encoding' => '8Bit',
+        'X-Mailer' => 'Drupal'
+    );
+
+    $params['headers'] = $headers;
+
+    $message = drupal_mail($module, $key, $to, $language, $params, $from, FALSE);
+
+    $message['subject'] = "Someone has purchased an item you endorsed at Fitmoo.com";
+
+    $info = array();
+    $info["something"] = "hello";
+
+
+    $body = theme('refereremail',$info);
 
     $message['body'] = array();
     $message['body'][] = $body;

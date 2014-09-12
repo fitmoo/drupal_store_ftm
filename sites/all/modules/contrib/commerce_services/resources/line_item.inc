@@ -422,7 +422,6 @@ function commerce_services_line_item_create_access($data) {
 function commerce_services_line_item_update($line_item_id, $data, $flatten_fields) {
   // Load the line item.
   $line_item = commerce_line_item_load($line_item_id);
-
   // Set field values using the data provided.
   commerce_services_set_field_values('commerce_line_item', $line_item, $data, $flatten_fields);
 
