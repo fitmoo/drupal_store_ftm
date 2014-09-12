@@ -926,6 +926,9 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
                 $info['product'] = $product->title;
                 $info['orderDate'] = $order->changed;
                 $info['total'] = $total;
+
+                //TODO add event/membership specific info here
+
             } else if ($line_item->type == 'shipping') {
                 $info['shipping'] = commerce_currency_amount_to_decimal($line_item->commerce_unit_price['und'][0]['amount'], 'USD');
             }
