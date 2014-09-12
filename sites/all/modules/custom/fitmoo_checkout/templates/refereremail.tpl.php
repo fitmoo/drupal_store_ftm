@@ -9,11 +9,6 @@ $image = array(
 );
 
 $redirect_base = variable_get('anonymous_redirect_base', '');
-
-$fitfeeperc = $buyperc + $fitperc;
-
-//print theme('image_style', $image);
-
 ?>
 
 <!DOCTYPE html>
@@ -245,74 +240,15 @@ $fitfeeperc = $buyperc + $fitperc;
         <section class="mailtext">
             <div class="section-wrapper clearfix">
                 <div class="content-div">
-                    <div style="float: left;"><a href="<?php print $redirect_base;?>/dashboard/balances">check your dashboard balance</a></div>
-                </div>
-            </div>
-
-        </section>
-        <?php/*
-        <section class="products">
-            <div class="section-wrapper clearfix">
-                    <div class="views-form">
-                        <div class="views-row views-row-1 views-row-odd views-row-first views-row-last">
-
-                            <div class="content-div" style="height: 100px;">
-                                        <div class="views-formh2">
-                                            <a href="#"><?php print $product;?></a>
-                                            <a href="#" style="float: right;">$<?php print $total;?></a>
-                                        </div>
-                                        <div class="content">
-                                            <fieldset id="commerce_product_product_node">
-                                                 <div class="fieldset-wrapper">
-                                                    <div class="field-type-image">
-                                                        <div class="field-items">
-                                                            <div class="field-item even"><?php print theme('image_style', $image);?></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </fieldset>
-                                            <fieldset id="commerce_product_product_node_teaser_group_product_details">
-                                                <div class="fieldset-wrapper">
-                                                    <div class="field-type-details">
-                                                        <div class="field-label">Size:&nbsp;<?php print $size;?></div>
-                                                        <div class="field-label">Qty:&nbsp;<?php print number_format(floor($qty));?></div>
-                                                    </div>
-                                                </div>
-                                            </fieldset>
-                                        </div>
-                            </div>
-                        </div>
-                    </div>
-
-            </div>
-        </section>
-        <section class="total">
-            <div class="section-wrapper clearfix">
-                <div class="content-div">
-                    <div class="rcolumn">
-                        <div>
-                            <div class="lcolumn">Price</div>
-                            <div class="rcolumn">$<?php print $total*$qty;?></div>
-                        </div>
-                        <div>
-                            <div class="lcolumn">Estimated Tax</div>
-                            <div class="rcolumn">$0.00</div>
-                        </div>
-                        <div>
-                            <div class="lcolumn">Shipping</div>
-                            <div class="rcolumn">$<?php print $shipping;?></div>
-                        </div>
-                        <div>
-                            <div class="lcolumn">Order total</div>
-                            <div class="rcolumn">$<?php print $ordertotal;?></div>
-                        </div>
+                    <div style="float: left;">
+                    The item <?php print $product_name;?> which you endorsed has been purchased giving you an endorsement amount of $<?php print $referer_commission;?>.
+                        <br/><br/>
+                        <a href="<?php print $redirect_base;?>/dashboard/balances">check your dashboard balance</a>
                     </div>
                 </div>
-
             </div>
-        </section>
-        */?>
 
+        </section>
     </div>
     <!--END content-->
 

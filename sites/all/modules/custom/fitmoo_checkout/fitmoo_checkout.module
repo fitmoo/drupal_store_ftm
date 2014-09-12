@@ -1542,32 +1542,10 @@ function fitmoo_checkout_buyer_email($uid,$info){
     $message['result'] = $system->mail($message);
     return TRUE;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function fitmoo_order_complete_referer_email($uid,$info){
 
-    error_log("uid: ".$uid);
-    error_log("info: ".serialize($info));
+    //error_log("uid: ".$uid);
+    //error_log("info: ".serialize($info));
 
     $module = 'fitmoo_checkout';
     $key = 'order';
@@ -1591,9 +1569,8 @@ function fitmoo_order_complete_referer_email($uid,$info){
 
     $message['subject'] = "Someone has purchased an item you endorsed at Fitmoo.com";
 
-    $info = array();
-    $info["something"] = "hello";
-
+    //$info = array();
+    //$info["something"] = "hello";
 
     $body = theme('refereremail',$info);
 
