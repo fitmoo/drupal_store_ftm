@@ -1254,8 +1254,3 @@ ul.selectbox.items li .text {
 
   .locality-block .form-type-textfield {
     width: 100% !important; } }
-
-    /*added by colin o 8/12/2014*/
-  #edit-customer-profile-billing-commerce-customer-address{
-      margin-top:95px;
-  }
