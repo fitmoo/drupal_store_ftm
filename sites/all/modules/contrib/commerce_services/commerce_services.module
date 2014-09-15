@@ -2454,14 +2454,6 @@ function commerce_services_update_entity($entity_type, $entity_id, $data, $flatt
  */
 function commerce_services_set_field_values($entity_type, $entity, $data, $flatten_fields) {
 
-    error_log("-----");
-    error_log("file: ".__FILE__);
-    error_log("function: ".__FUNCTION__);
-    error_log("entity_type: ".serialize($entity_type));
-    error_log("entity: ".serialize($entity));
-    error_log("data: ".serialize($data));
-    error_log("flatten_fields: ".$flatten_fields);
-
     //try {
         $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
         $properties = entity_get_property_info($entity_type);

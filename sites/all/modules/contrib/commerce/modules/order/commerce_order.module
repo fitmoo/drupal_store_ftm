@@ -740,8 +740,9 @@ function commerce_order_new($uid = 0, $status = NULL, $type = 'commerce_order') 
  * @return
  *   SAVED_NEW or SAVED_UPDATED depending on the operation performed.
  */
-function commerce_order_save($order) {
+function commerce_order_save($order) {error_log(__FILE__." ".__FUNCTION__);
     $info = array();
+    error_log("order->status: ".$order->status);
     if($order->status == "Completed:Accepted"){
         if(!is_null($order->field_referer["und"]["0"]["uid"])){
             //error_log("order->field_referer: ".serialize($order->field_referer["und"]["0"]["uid"]));
@@ -1302,7 +1303,7 @@ function commerce_order_status_options_list() {
  * @return
  *   The updated order.
  */
-function commerce_order_status_update($order, $name, $skip_save = FALSE, $revision = NULL, $log = '') {
+function commerce_order_status_update($order, $name, $skip_save = FALSE, $revision = NULL, $log = '') {error_log(__FILE__." ".__FUNCTION__);
   if (!isset($revision)) {
     $revision = variable_get('commerce_order_auto_revision', TRUE);
   }

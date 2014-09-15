@@ -428,177 +428,6 @@ function fitmoo_checkout_setShippingFee_submit($form, &$form_state) {
 }
 
 /**
- * Notes
- * This is the old function, notice the misspelling, the new one is above
- * Buyer percentage (buyer_perc) and fee is now not used at all but it's been left here until we can take it out of the admin
- *
- * TODO DELETE THIS FUNCTION
- */
-function fitmoo_checkout_calc_comisions($params){
-    /**
-     * For now these are hard coded due to not all of this being in the database
-     */
-
-    if($params['productType'] == 'event'){
-        /*
-        $buyer_perc = variable_get("buyer_event_perc", "");
-        $fitmoo_perc = variable_get("fitmoo_event_perc", "");
-        $refferer_perc = variable_get("refferer_event_perc", "");
-        */
-        $buyer_perc = 0;
-        $fitmoo_perc = 10;
-        $refferer_perc = 5;
-
-    }elseif($params['productType'] == 'clothing' || $params['productType'] == 'shoes' || $params['productType'] == 'product'){
-        /*
-        $buyer_perc = variable_get("buyer_perc", "");
-        $fitmoo_perc = variable_get("fitmoo_perc", "");
-        $refferer_perc = variable_get("refferer_perc", "");
-        */
-        $buyer_perc = 0;
-        $fitmoo_perc = 10;
-        $refferer_perc = 5;
-    }else{//type is membership
-        $buyer_perc = 0;
-        $fitmoo_perc = 2.5;
-        $refferer_perc = 5;
-    }
-
-    //$seller_perc = 100 - $buyer_perc - $fitmoo_perc;
-    $seller_perc = 100 - $fitmoo_perc;
-
-    if(isset($params["referer"]) && $params["referer"] > 0){
-        $seller_perc = $seller_perc - $refferer_perc;
-    }else{
-        $refferer_perc = 0;
-    }
-
-    // fitmoo field_referer_com here see http://dev.store.fitmoo.com/admin/commerce/config/commissions to set it
-    $ccfees = ($params['ordertotal'] * .0299) + .30;
-
-    /**
-     * TODO
-     * check business rules on the fees, commissions
-     */
-    //$fit_fee = (($params['total']/100) * $fitmoo_perc/100) + $ccfees;
-    $fit_fee = ($params['total'] * ($fitmoo_perc/100)) + $ccfees;
-    //error_log("total: ".$params["total"]);
-    //error_log("fitmoo_perc/100: ".$fitmoo_perc/100);
-    //error_log("fit_fee: ".$fit_fee);
-
-    //$refferer_fee = ($params["total"]/100 * $refferer_perc);
-    $refferer_com = ($params["total"]) * ($refferer_perc/100);
-    //error_log("refferer_com: ".$refferer_com);
-
-    //seller
-    $sell_com = ($params['total'] - $fit_fee) - $refferer_com;
-
-    //insert the order in the database
-
-    //seller
-    $id = db_insert('fitmoo_user_accounting')
-        ->fields(array(
-            'uid' => $params['seller_uid'],   //user ID
-            'type' => 'seller', // buyer, seller, reference, fitmoo
-            'ammount' => $sell_com, // 20.00
-            'percentage' => $seller_perc, // commisions percent example seller now is 80
-            'orderID' => $params['orderID'],
-            'productID' => $params['productID'],
-            'status' => 'pending', //pending, cleared, credit , withdrawn
-            'created' => REQUEST_TIME,
-            'updated' => REQUEST_TIME,
-        ))
-        ->execute();
-    _update_user_balance($params['seller_uid']);
-
-    //buyer
-    $buyer_com = ($params['total']/100)*$buyer_perc;//this doesn't look right
-    //error_log("buyer_com: ".$buyer_com);
-
-    $id = db_insert('fitmoo_user_accounting')
-        ->fields(array(
-            'uid' => $params['buyer_uid'],   //user ID
-            'type' => 'buyer', // buyer, seller, reference, fitmoo
-            'ammount' => $buyer_com, // 20.00
-            'percentage' => variable_get("buyer_perc", ""), // commisions percent
-            'orderID' => $params['orderID'],
-            'productID' => $params['productID'],
-            'status' => 'pending', //pending, cleared, credit , withdrawn
-            'created' => REQUEST_TIME,
-            'updated' => REQUEST_TIME,
-        ))
-        ->execute();
-    _update_user_balance($params['buyer_uid']);
-
-    /**
-     * TODO figure out why fitmoo_com is being set to equal fee, fitmoo commission and fitmoo fee are separate things but seem to be joined in the database
-     */
-    //$fitmoo_com = $fit_fee;
-    $fitmoo_com = $params['total'] * ($fitmoo_perc/100);
-
-    $id = db_insert('fitmoo_user_accounting')
-        ->fields(array(
-            'uid' => 1,   //user ID
-            'type' => 'fitmoo', // buyer, seller, reference, fitmoo
-            'ammount' => $fitmoo_com, // 20.00
-            'percentage' => variable_get("fitmoo_perc", ""), // commisions percent example seller now is 80
-            'orderID' => $params['orderID'],
-            'productID' => $params['productID'],
-            'status' => 'pending', //pending, cleared, credit , withdrawn
-            'created' => REQUEST_TIME,
-            'updated' => REQUEST_TIME,
-        ))
-        ->execute();
-        _update_user_balance(1);
-
-    /**
-     * TODO do we use the id of the referer here instead of uid = 1?
-     */
-
-    //referer
-    try {
-        $id = db_insert('fitmoo_user_accounting')
-            ->fields(array(
-                'uid' => 1, //user ID
-                'type' => 'refferer', // buyer, seller, reference/referer, fitmoo
-                'ammount' => $refferer_com, // money paid to the referer if any
-                'percentage' => variable_get("refferer_perc", "5"), // commisions percent, hard coded for now
-                'orderID' => $params['orderID'],
-                'productID' => $params['productID'],
-                'status' => 'pending', //pending, cleared, credit , withdrawn
-                'created' => REQUEST_TIME,
-                'updated' => REQUEST_TIME,
-            ))
-            ->execute();
-            _update_user_balance(1);
-            $refererperc = $refferer_perc;
-    }catch(Exception $e){
-        error_log(__FILE__.' '.__FUNCTION__.' exception (test): '.$e->getMessage());
-    }
-
-    $fitperc = $fitmoo_perc;
-
-    $sellperc = $seller_perc;
-
-    $buyperc = $buyer_perc;
-
-    $data = array(
-        'fitperc' => $fitperc,
-        'fitcom' => $fitmoo_com,
-        'sellperc' => $sellperc,
-        'sellcom' => $sell_com,
-        'buyperc' => $buyperc,
-        'buycom' => $buyer_com,
-        'refererperc' => $refferer_perc,
-        'referercom' => $refferer_com
-    );
-    //error_log(__FUNCTION__." has finished");
-    return $data;
-
-}
-
-
-/**
  * 8/21/2014
  *
  * These are the definitions of variables for the checkout process.
@@ -673,7 +502,7 @@ function fitmoo_checkout_calculate_commissions($params){
 
     // Referrer
 
-    if(!isset($params["referer"])){
+    if(!isset($params["referer"]) || $params["referer"] <= 0){
         $refferer_percentage = 0;
         $refferer_commission = 0;
     }else{
@@ -792,21 +621,22 @@ function fitmoo_checkout_calculate_commissions($params){
 
     //referer
 
-    $id = db_insert('fitmoo_user_accounting')
-        ->fields(array(
-            'uid' => 1, //user ID
-            'type' => 'refferer', // buyer, seller, reference/referer, fitmoo
-            'ammount' => $refferer_commission,
-            'percentage' => $refferer_percentage,
-            'orderID' => $params['orderID'],
-            'productID' => $params['productID'],
-            'status' => 'pending', //pending, cleared, credit , withdrawn
-            'created' => REQUEST_TIME,
-            'updated' => REQUEST_TIME,
-        ))
-        ->execute();
-    _update_user_balance(1);
-
+    if(isset($params["referer"]) && $params["referer"] > 0) {
+        $id = db_insert('fitmoo_user_accounting')
+            ->fields(array(
+                'uid' => $params["referer"], //user ID
+                'type' => 'refferer', // buyer, seller, reference/referer, fitmoo
+                'ammount' => $refferer_commission,
+                'percentage' => $refferer_percentage,
+                'orderID' => $params['orderID'],
+                'productID' => $params['productID'],
+                'status' => 'pending', //pending, cleared, credit , withdrawn
+                'created' => REQUEST_TIME,
+                'updated' => REQUEST_TIME,
+            ))
+            ->execute();
+        _update_user_balance($params["referer"]);
+    }
     /**
      * TODO change these to the correct full form variable names, here and in the calling function
      */
