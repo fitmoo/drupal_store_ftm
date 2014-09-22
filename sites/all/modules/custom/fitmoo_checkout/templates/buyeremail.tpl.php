@@ -327,7 +327,7 @@ error_log("shipping: ".$shipping);
                         <?php if(line_items > 1){?>}
                         <div>
                             <div class="lcolumn">Shipping</div>
-                            <div class="rcolumn">$<?php print $shipping;?></div>
+                            <div class="rcolumn">$<?php if(!is_null($shipping)){print $shipping;}?></div>
                         </div>
                         <?php }?>
                         <div>
