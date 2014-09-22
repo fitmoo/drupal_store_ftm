@@ -359,7 +359,7 @@ function fitmoo_store_field_default_field_instances() {
     'entity_type' => 'commerce_customer_profile',
     'field_name' => 'field_customer_name',
     'label' => 'Name',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
       'text_processing' => 0,
       'user_register_form' => FALSE,
@@ -393,7 +393,7 @@ function fitmoo_store_field_default_field_instances() {
     'entity_type' => 'commerce_customer_profile',
     'field_name' => 'field_phone',
     'label' => 'Phone',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
       'text_processing' => 0,
       'user_register_form' => FALSE,
@@ -758,7 +758,7 @@ function fitmoo_store_field_default_field_instances() {
     'entity_type' => 'commerce_customer_profile',
     'field_name' => 'field_customer_name',
     'label' => 'Name',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
       'text_processing' => 0,
       'user_register_form' => FALSE,
@@ -1272,6 +1272,39 @@ function fitmoo_store_field_default_field_instances() {
       'settings' => array(),
       'type' => 'number',
       'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance: 'commerce_order-commerce_order-field_order_meta_data'
+  $field_instances['commerce_order-commerce_order-field_order_meta_data'] = array(
+    'bundle' => 'commerce_order',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 20,
+      ),
+    ),
+    'entity_type' => 'commerce_order',
+    'field_name' => 'field_order_meta_data',
+    'label' => 'order_meta_data',
+    'required' => FALSE,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'text',
+      'settings' => array(
+        'rows' => 5,
+      ),
+      'type' => 'text_textarea',
+      'weight' => 20,
     ),
   );
 
@@ -6506,6 +6539,7 @@ function fitmoo_store_field_default_field_instances() {
   t('fitmooID');
   t('image');
   t('image_url');
+  t('order_meta_data');
   t('referer');
   t('shipping label url');
   t('shipping_buyer_amount');

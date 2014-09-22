@@ -1,4 +1,7 @@
 <?php
+/**
+ * Remember anything put in the info array in the checkout method is now in this scope, no need to use $info["whatever"], just use $whatever
+ */
 global $base_url;
 $path = $base_url.'/'.drupal_get_path('module', 'fitmoo_checkout');
 
@@ -9,13 +12,9 @@ $image = array(
 );
 
 $redirect_base = variable_get('anonymous_redirect_base', '');
-
-$fitfeeperc = $buyperc + $fitperc;
-
-//print theme('image_style', $image);
-	
+error_log("meta_data from the info array in the email template ".serialize($meta_data));
+error_log("shipping: ".$shipping);
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -245,10 +244,12 @@ $fitfeeperc = $buyperc + $fitperc;
         <section class="mailtext">
             <div class="section-wrapper clearfix">
                 <div class="content-div">
-                    <p>Thank you for shopping with us. This is to inform you that your order has been received and we have already notified the seller. 
-		The seller will have 5 days to prepare the shipment and ship your item. 
-		The estimated delivery time is 5-10 business days. To view the status of your order, please visit 
-		<a href="<?php print $redirect_base;?>/dashboard/purchases">Your order</a> on Fitmoo.com </p>
+                    <p>Thank you for shopping with us. This is to inform you that your order has been received and we have already notified the seller.
+                <?php if($line_items > 1){?>
+                    The seller will have 5 days to prepare the shipment and ship your item.
+                    The estimated delivery time is 5-10 business days.
+                <?php }?>
+                    To view the status of your order, please visit <a href="<?php print $redirect_base;?>/dashboard/purchases">your order</a> on Fitmoo.com </p>
                 </div>
                 <div class="content-div" style="padding-top: 20px;">
                 <h1>Order Details</h1>
@@ -258,14 +259,17 @@ $fitfeeperc = $buyperc + $fitperc;
                 <div class="content-div" style="padding-top: 20px;">
                     <div class="lcolumn">
                         <div style="font-weight: bold;">Shipped to:</div>
+
+                        <?php if($line_items > 1){?>
                         <div><?php print $shipto['name_line'];?></div>
                         <div><?php print $shipto['thoroughfare'];?> <?php print $shipto['premise'];?></div>
                         <div><?php print $shipto['locality'];?>, <?php print $shipto['administrative_area'];?> <?php print $shipto['postal_code'];?> <?php print $shipto['country'];?></div>
+                        <?php }else{?>
+                        <div>No shipping</div>
+                        <?php }?>
                     </div>
                     <div class="rcolumn">
-                        <!-- <div style="font-weight: bold;">Payment info:</div>
-                        <div>Americaan Express</div>
-                        <div>Last4: 5252</div> -->
+                        &nbsp;
                     </div>
                 </div>
             </div>
@@ -294,7 +298,9 @@ $fitfeeperc = $buyperc + $fitperc;
                                             <fieldset id="commerce_product_product_node_teaser_group_product_details">
                                                 <div class="fieldset-wrapper">
                                                     <div class="field-type-details">
+                                                        <?php if(!is_null($size)){?>
                                                         <div class="field-label">Size:&nbsp;<?php print $size;?></div>
+                                                        <?php }?>
                                                         <div class="field-label">Qty:&nbsp;<?php print number_format(floor($qty));?></div>
                                                     </div>
                                                 </div>
@@ -312,16 +318,18 @@ $fitfeeperc = $buyperc + $fitperc;
                     <div class="rcolumn">
                         <div>
                             <div class="lcolumn">Price</div>
-                            <div class="rcolumn">$<?php print $total*$qty;?></div>
+                            <div class="rcolumn">$<?php print $total;?></div>
                         </div>
                         <div>
                             <div class="lcolumn">Estimated Tax</div>
                             <div class="rcolumn">$0.00</div>
                         </div>
+                        <?php if(line_items > 1){?>}
                         <div>
                             <div class="lcolumn">Shipping</div>
                             <div class="rcolumn">$<?php print $shipping;?></div>
                         </div>
+                        <?php }?>
                         <div>
                             <div class="lcolumn">Order total</div>
                             <div class="rcolumn">$<?php print $ordertotal;?></div>

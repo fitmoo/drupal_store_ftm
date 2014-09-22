@@ -112,17 +112,32 @@ function commerce_services_cart_create($data, $flatten_fields) {
  */
 function commerce_services_line_item_create($data, $flatten_fields) {
     global $user;
+
+    //error_log(__FILE__." ".__FUNCTION__);
+    //error_log("data: ".serialize($data));
+    //error_log("data[order_meta_data]: ".serialize($data["order_meta_data"]));
+    $_SESSION["order_meta_data"] = $data["order_meta_data"];
+
+    unset($data["order_meta_data"]);
+
 //====check&create order
     $uid = !empty($user->uid) ? $user->uid : 0;
     if ($uid == 0) {
         return services_error(t('Access to this operation not granted'), 401);
     }
     $order_id = db_query('SELECT order_id FROM {commerce_order} WHERE uid = :uid AND status IN (:status_ids) ORDER BY order_id DESC', array(':uid' => $uid, ':status_ids' => 'cart'))->fetchField();
-
-    if (empty($order_id)) {
+    /**
+     * cfo 9/22/2014
+     * I've take out the if condition here which causes the system to create a new order when someone puts something in their cart
+     * This gets around the bug where if a product with shipping is added, then a product without shipping replaces it the shipping is not reset and the user is charged
+     *
+     * If there are any repercussions to doing this uncomment the if statement and add logic down the chain in add_manual_shipping_line_item. Tij clue
+     */
+    //if (empty($order_id)) {
       $order =  commerce_services_cart_create(array(), $flatten_fields);
       $order_id = $order->order_id;
-    }
+    //}
+
   commerce_services_line_item_create_access($data);
 
   if (!empty($data['callback'])){
@@ -131,7 +146,9 @@ function commerce_services_line_item_create($data, $flatten_fields) {
   }
 
     $order = commerce_order_load($order_id);
-
+    error_log("---");
+    error_log("order: ".serialize($order));
+    error_log("---");
     if (!empty($data['endorser_drupal_id'])){
         $_SESSION['endorser_drupal_id'] = $data['endorser_drupal_id'];
         $order->field_referer['und'][0]['uid'] = $data['endorser_drupal_id'];
@@ -161,6 +178,7 @@ function commerce_services_line_item_create($data, $flatten_fields) {
                 break;
           }
       }
+
       add_manual_shipping_line_item($order, $data);
   }
   $data['order_id'] = $order_id;
@@ -203,9 +221,11 @@ function commerce_services_line_item_create($data, $flatten_fields) {
 
     // Populate the line item.
     commerce_product_line_item_populate($line_item, $product);
+
   }
   // Set the field and property data and save the line item.
   commerce_services_set_field_values('commerce_line_item', $line_item, $data, $flatten_fields);
+
   commerce_line_item_save($line_item);
 
   // Add the line item to its order.
@@ -213,6 +233,7 @@ function commerce_services_line_item_create($data, $flatten_fields) {
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
   $order_wrapper->commerce_line_items[] = $line_item;
   commerce_order_save($order);
+
   // Add simplified fields to the line item object for certain field types.
   commerce_services_decorate_entity('commerce_line_item', $line_item);
 
@@ -383,6 +404,11 @@ function add_manual_shipping_line_item($order, $data) {
     commerce_shipping_delete_shipping_line_items($order, false);
 
     // Save and add the line item to the order.
+
+    /**
+     * If the
+     */
+    //Tij clue if($_SESSION['product_fitmoo_type'] == 'physicalgood'){
     return commerce_shipping_add_shipping_line_item($line_item, $order, false);
 }
 

@@ -313,7 +313,7 @@ function commerce_braintree_tr_redirect_form_validate($order, $payment_method) {
  * @param $redirect
  *   Boolean indicating whether or not to call redirect functions.
  */
-function commerce_braintree_tr_process_transaction($order, $payment_method, $feedback, $redirect = TRUE) {
+function commerce_braintree_tr_process_transaction($order, $payment_method, $feedback, $redirect = TRUE) {error_log(__FILE__." ".__FUNCTION__);
     // Initialize the Braintree client.
     commerce_braintree_initialize($payment_method);
 

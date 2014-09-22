@@ -279,7 +279,7 @@ function commerce_services_order_update_access($order_id) {
  * @param $order_id
  *   The ID of the order to be deleted.
  */
-function commerce_services_order_delete($order_id) {
+function commerce_services_order_delete($order_id) {error_log(__FILE__." ".__FUNCTION__);
   commerce_order_delete($order_id);
 }
 

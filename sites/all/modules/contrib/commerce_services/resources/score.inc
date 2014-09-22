@@ -35,7 +35,7 @@ function commerce_services_score_create_access($data){
 }
 
 
-function commerce_services_score_retrieve($uid) {
+function commerce_services_score_retrieve($uid) {error_log(__FILE__." ".__FUNCTION__);
     global $user;
     $uid =  $user->uid;
     $user_object = user_load($uid);
@@ -86,7 +86,7 @@ function commerce_services_score_retrieve_access() {
     if (!empty($user->uid)) {return TRUE;} else {return FALSE;}
 }
 
-function commerce_services_score_index($uid) {
+function commerce_services_score_index($uid) {error_log(__FILE__." ".__FUNCTION__);
     global $user;
     $uid =  $user->uid;
     $user_object = user_load($uid);
@@ -112,6 +112,7 @@ function commerce_services_score_index($uid) {
 	$results = db_select('fitmoo_user_redemptions', 'm')
 	    ->fields('m')
 		->condition('uid', $user_object->uid,'=')
+        ->condition('status', 'cleared', '<>')
 	    ->execute();
 		
 	$redemption = array();	
@@ -127,7 +128,7 @@ function commerce_services_score_index($uid) {
 	}
 	
 	unset($user_object);
-	
+	error_log("result: ".serialize($result));
     return $result;
 }
 

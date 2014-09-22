@@ -659,9 +659,9 @@ function fitmoo_checkout_calculate_commissions($params){
  * Implements hook_commerce_checkout_complete().
  */
 function fitmoo_checkout_commerce_checkout_complete($order) {
-    error_log(__FILE__);
-    error_log(__FUNCTION__);
-    error_log("order: ".serialize($order));
+    //error_log(__FILE__);
+    //error_log(__FUNCTION__);
+    //error_log("order: ".serialize($order));
     /**
      * Start transaction here
      * Note the transaction extends to functions called in this one, so fitmoo_checkout_calculate_commissions
@@ -670,7 +670,7 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
     $transaction = db_transaction();
 
     try {
-
+        error_log("_SESSION: ".serialize($_SESSION));
         // Iterate through every commerce line item added in product.
         $info = array();
         /**
@@ -683,7 +683,9 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
             $info["line_items"]++;
             // Load commerce line item by line item id.
             $line_item = commerce_line_item_load($line_item_id['line_item_id']);
-            error_log("line_item: ".serialize($line_item));
+            error_log(" ");
+            error_log("line_item->type: ".$line_item->type);
+            error_log(" ");
             // We do not want to include shipping cost in userpoints.
             if ($line_item->type != 'shipping') {
                 // Load commerce product by product id.
@@ -691,7 +693,10 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
                 $temp = field_get_items('commerce_line_item', $line_item, 'commerce_product');
 
                 $product = commerce_product_load($temp[0]['product_id']);
-
+                error_log("order: ".serialize($order));
+                error_log(" ");
+                error_log("temp: ".serialize($temp));
+                error_log("product: ".serialize($product));
                 // Create parameters so that we can calculate the commissions
                 $params = array(
                     'seller_uid' => $product->uid,  //seller uid
@@ -757,7 +762,11 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
                 $info['orderDate'] = $order->changed;
                 $info['total'] = $total;
 
-                //TODO add event/membership specific info here
+                // add meta data (event/membership info/time) to the order
+                $order->field_order_meta_data['und'][0]['value'] = json_encode($_SESSION["order_meta_data"]);
+
+                // add meta data (event/membership info/time) to the info array for emails
+                $info["order_meta_data"] = $_SESSION["order_meta_data"];
 
             } else if ($line_item->type == 'shipping') {
                 $info['shipping'] = commerce_currency_amount_to_decimal($line_item->commerce_unit_price['und'][0]['amount'], 'USD');
@@ -794,11 +803,11 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
 
         //error_log("info[line_items]: ".$info["line_items"]);
 
+        //error_log("order info from Rails: ".serialize($_SESSION["order_meta_data"]));
+
         fitmoo_checkout_seller_email($product->uid, $info);
         fitmoo_checkout_buyer_email($order->uid, $info);
-        /**
-         * TODO Determine if we want to send a referer email
-         */
+
         commerce_order_save($order);
 
     }catch (Exception $e) {
@@ -1355,13 +1364,13 @@ function fitmoo_checkout_buyer_email($uid,$info){
 
     $message['subject'] = "Thank you for your order #".$info['orderID']." at Fitmoo.com";
 
-    if($info["line_items"] > 1){//this is a product, which requires shipping
+    //if($info["line_items"] > 1){//this is a product, which requires shipping
         //error_log("SHIPPING");
         $body = theme('buyeremail',$info);
-    }else{//this is a service, membership, event, etc and has no shipping
+    //}else{//this is a service, membership, event, etc and has no shipping
         //error_log("NO SHIPPING");
-        $body = theme('buyeremaileventsandservices',$info);
-    }
+        //$body = theme('buyeremaileventsandservices',$info);
+    //}
     //error_log("body: ".$body);
 
     $message['body'] = array();
@@ -1960,7 +1969,8 @@ function fitmoo_checkout_email_eventconf_buyer($order){
 
 
 function fitmoo_checkout_braintree_refund($order){
-
+    error_log(__FILE__." ".__FUNCTION__);
+    error_log("refunded order: ".serialize($order));
     $path = drupal_get_path('module', 'services');
 
     require_once( $path.'/includes/services.runtime.inc');
@@ -1986,7 +1996,7 @@ function fitmoo_checkout_braintree_refund($order){
     $transaction = Braintree_Transaction::find($remote_transaction_id);
     if ($transaction->status == Braintree_Transaction::SUBMITTED_FOR_SETTLEMENT) {
         $result = Braintree_Transaction::void($remote_transaction_id);
-        if ($result->success) {
+        if ($result->success) {error_log(__FUNCTION__." one");
             $refund = $result->transaction;
             $refundedTransactionId = $refund->refundedTransactionId;
             _save_transaction ($order, $transaction, $refundedTransactionId, $result);
@@ -1998,7 +2008,7 @@ function fitmoo_checkout_braintree_refund($order){
         }
     } else if ($transaction->status == Braintree_Transaction::SETTLED) {
         $result = Braintree_Transaction::refund($remote_transaction_id);
-        if ($result->success) {
+        if ($result->success) {error_log(__FUNCTION__." two");
             $refund = $result->transaction;
             $refundedTransactionId = $refund->refundedTransactionId;
             _save_transaction ($order, $transaction, $refundedTransactionId, $result);
@@ -2009,11 +2019,24 @@ function fitmoo_checkout_braintree_refund($order){
             return;
         }
     }else if ($transaction->status == Braintree_Transaction::AUTHORIZED) {
+        /**
+         * TODO If a buyer or seller cancels an order we cancel it with braintree and set the status of the order to cancelled in our system
+         */
         $result = Braintree_Transaction::void($remote_transaction_id);
         if ($result->success) {
             $refund = $result->transaction;
             $refundedTransactionId = $refund->refundedTransactionId;
             _save_transaction ($order, $transaction, $refundedTransactionId, $result);
+
+            error_log(__FUNCTION__." three");
+            error_log($order->field_seller["und"][0]["uid"]);
+
+            $num_updated = db_update('fitmoo_user_accounting') // Table name no longer needs {}
+            ->fields(array(
+                    'status' => "cleared",
+                ))
+                ->condition('orderID', $order->order_id, '=')
+                ->execute();
             return $order;
         } else {
             //return services_error(t($result->message), 500);
@@ -2033,7 +2056,7 @@ function fitmoo_checkout_braintree_refund($order){
 
 }
 
-function _save_transaction ($order, $transaction, $refundedTransactionId, $result) {
+function _save_transaction ($order, $transaction, $refundedTransactionId, $result) {error_log(__FILE__." ".__FUNCTION__);
     $transaction1 = commerce_payment_transaction_new('commerce_payment_braintree_tr', $order->order_id);
     $transaction1->instance_id = 'braintree_tr';
     $transaction1->amount = $transaction->amount*100;
