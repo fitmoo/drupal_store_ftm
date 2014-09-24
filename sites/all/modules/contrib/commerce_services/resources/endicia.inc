@@ -130,18 +130,22 @@ function _endicia_print_label_data_validate($data) {
     }
 
     //set the size of the box
-    if (empty($data['package_info']["mail_shape"])) {
-
-        if($order->field_shipping_type_id['und'][0]['value'] == 1){
-            $data['package_info']["mail_shape"] = 'SmallFlatRateBox';
-        }elseif($order->field_shipping_type_id['und'][0]['value'] == 2){
-            $data['package_info']["mail_shape"] = 'MediumFlatRateBox';
-        }elseif($order->field_shipping_type_id['und'][0]['value'] == 3){
-            $data['package_info']["mail_shape"] = 'LargeFlatRateBox';
+    if (empty($data['package_info']['mail_shape'])) {
+	//error_log("Trying to set the mail shape: from order: ". $order->field_shipping_type_id['und'][0]['value']);
+	//error_log("Trying to set the mail shape: from product: ". $product->field_shipping_type_id['und'][0]['value']);
+        if($product->field_shipping_type_id['und'][0]['value'] == 1){
+            $data['package_info']['mail_shape'] = 'SmallFlatRateBox';
+        }elseif($product->field_shipping_type_id['und'][0]['value'] == 2){
+            $data['package_info']['mail_shape'] = 'MediumFlatRateBox';
+        }elseif($product->field_shipping_type_id['und'][0]['value'] == 3){
+            $data['package_info']['mail_shape'] = 'LargeFlatRateBox';
         }else{
             //custom is id 4 so don't do a thing
         }
     }
+
+    //error_log("Packing Mail Shape:".$data['package_info']['mail_shape']);
+
     if (empty($data['package_info']['description'])) {
         $data['package_info']['description'] = $line_item->commerce_product_entities[$line_item->commerce_product['und'][0]['product_id']]->type;
     }
@@ -223,7 +227,10 @@ function _endicia_print_label_data_validate($data) {
     // Make API call, storing any results in session
     $destination = $_SESSION['endicia']['delivery_address'];
     $origin = $_SESSION['endicia']['pickup_address'];
-    $package_info = $_SESSION['endicia']['package'];
+    
+    //Absolutely no idea why session is being used in the same file so using the variable above.
+    //$package_info = $_SESSION['endicia']['package'];
+    $package_info = $data['package_info'];
     $is_international = ($destination->country != 'US');
 
     // Set request data for API call to calculate postage rates
@@ -248,6 +255,9 @@ function _endicia_print_label_data_validate($data) {
         'DateAdvance' => $package_info['date_advance'],
         'Services' => array(),
     );
+
+    error_log("Endicia Data Request".serialize($data));
+
     foreach($package_info['options'] as $option => $value) {
         if ($value) {
             switch ($option) {
