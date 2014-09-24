@@ -12,7 +12,7 @@ $image = array(
 );
 
 $redirect_base = variable_get('anonymous_redirect_base', '');
-error_log("meta_data from the info array in the email template ".serialize($meta_data));
+error_log("meta_data from the info array in the email template ".serialize($order_meta_data));
 error_log("shipping: ".$shipping);
 ?>
 <!DOCTYPE html>
@@ -237,8 +237,6 @@ error_log("shipping: ".$shipping);
            <img src="<?php print $path;?>/templates/img/head-logo.png" alt="FITMOO" height="33" width="133">
        </a>
     </div>
-
-
     <div class="content clearfix otherPeople-store">
 
         <section class="mailtext">
@@ -259,7 +257,6 @@ error_log("shipping: ".$shipping);
                 <div class="content-div" style="padding-top: 20px;">
                     <div class="lcolumn">
                         <div style="font-weight: bold;">Shipped to:</div>
-
                         <?php if($line_items > 1){?>
                         <div><?php print $shipto['name_line'];?></div>
                         <div><?php print $shipto['thoroughfare'];?> <?php print $shipto['premise'];?></div>
@@ -298,6 +295,14 @@ error_log("shipping: ".$shipping);
                                             <fieldset id="commerce_product_product_node_teaser_group_product_details">
                                                 <div class="fieldset-wrapper">
                                                     <div class="field-type-details">
+                                                        <?php if(!is_null($order_meta_data["begin_time"])){?>
+                                                            <div>Start<br/><?php print strtotime($order_meta_data["begin_time"]);?></div>
+                                                        <?php }?>
+                                                    <?php if(!is_null($order_meta_data["end_time"])){?>
+                                                        <div>End<br/><?php print strtotime($order_meta_data["end_time"]);?></div>
+                                                    </div>
+                                                    <?php }?>
+
                                                         <?php if(!is_null($size)){?>
                                                         <div class="field-label">Size:&nbsp;<?php print $size;?></div>
                                                         <?php }?>

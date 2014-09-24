@@ -1,7 +1,3 @@
-<?php
-//print_r(getdate(1409780832));
-?>
-<br/>
 <u>Order</u><br/><br/>
 <pre>
 <?php

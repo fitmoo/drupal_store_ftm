@@ -3,7 +3,7 @@
 /**
  *!!!! MUST REFACTOR TO MAKE MORE SECURE FOR SQL INJECTIONS
  */
-function commerce_services_score_create($data) {
+function commerce_services_score_create($data) {error_log(__FILE__." ".__FUNCTION__);
     global $user;
     $uid =  $user->uid;
 
@@ -19,7 +19,7 @@ function commerce_services_score_create($data) {
     if (!empty($data['from'])) {$from = " and created >= '{$data['from']}' ";  } else {$from = '';}
     if (!empty($data['till'])) {$till = " and created <= '{$data['till']}' ";  } else {$till = '';}
 
-    $result = db_query("SELECT SUM( ammount ) as ammount, type, orderID, productID FROM `fitmoo_user_accounting` WHERE uid = $uid $status $type $orderID $productID $from $till $group");
+    $result = db_query("SELECT SUM( ammount ) as ammount, type, orderID, productID FROM fitmoo_user_accounting WHERE uid = $uid $status $type $orderID $productID $from $till $group");
     foreach($result as $key=>$value){
         $temp[] = $value;
     }
@@ -86,7 +86,7 @@ function commerce_services_score_retrieve_access() {
     if (!empty($user->uid)) {return TRUE;} else {return FALSE;}
 }
 
-function commerce_services_score_index($uid) {error_log(__FILE__." ".__FUNCTION__);
+function commerce_services_score_index($uid) {error_log(__FILE__." ".__FUNCTION__);error_log(('hi colin'));
     global $user;
     $uid =  $user->uid;
     $user_object = user_load($uid);
@@ -112,7 +112,6 @@ function commerce_services_score_index($uid) {error_log(__FILE__." ".__FUNCTION_
 	$results = db_select('fitmoo_user_redemptions', 'm')
 	    ->fields('m')
 		->condition('uid', $user_object->uid,'=')
-        ->condition('status', 'cleared', '<>')
 	    ->execute();
 		
 	$redemption = array();	

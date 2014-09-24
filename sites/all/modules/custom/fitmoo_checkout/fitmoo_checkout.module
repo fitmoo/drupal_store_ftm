@@ -2033,10 +2033,14 @@ function fitmoo_checkout_braintree_refund($order){
 
             $num_updated = db_update('fitmoo_user_accounting') // Table name no longer needs {}
             ->fields(array(
-                    'status' => "cleared",
+                    'status' => "cancelled",
                 ))
                 ->condition('orderID', $order->order_id, '=')
                 ->execute();
+
+            //we need to update the user's totals using the magic drupal method in fitmoo_admintools.module
+            _update_user_balance($order->field_seller["und"][0]["uid"]);
+
             return $order;
         } else {
             //return services_error(t($result->message), 500);
