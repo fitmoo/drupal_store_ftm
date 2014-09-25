@@ -419,8 +419,17 @@ function commerce_services_product_create_access($data) {
  * @see commerce_services_update_entity()
  */
 function commerce_services_product_update($product_id, $data, $flatten_fields) {
+    error_log("--------------------------------------");
+    error_log(__FILE__." ".__FUNCTION__);
+    error_log("product_id: ".$product_id);
+    error_log("data: ".serialize($data));
+    error_log("flatten_fields: ".$flatten_fields);
+    error_log(" ");
+    error_log("backtrace: ".serialize(debug_backtrace()));
+    error_log(" ");
  global $user;
  if(is_array($data['items'][0])) {
+     error_log("uno");
       $array = array();
       foreach($data['items'][0] as $key => $items){
           $product = commerce_product_load($items[0]);
@@ -431,6 +440,7 @@ function commerce_services_product_update($product_id, $data, $flatten_fields) {
       }
       return $array;
  } else if ($data['node'] == "true") {
+     error_log("dos");
      unset($data['node']);
      $product_node = node_load($product_id);
      $uid = $user->uid;
@@ -444,6 +454,51 @@ function commerce_services_product_update($product_id, $data, $flatten_fields) {
      if (!empty($data['sku'])) {$product_node->sku = $data['sku'];  unset($data['sku']);}
      if (!empty($data['description'])) {$product_node->body['und'][0]['value'] = $data['description']; unset($data['description']);}
      if (is_array($data['products'][0])) {$products = $data['products'][0];}
+
+
+     // Ensure the request specifies a commerce_price amount and currency_code.
+     $amount = NULL;
+     $currency_code = NULL;
+
+     // If the commerce_price field is set in the data array, examine its values
+     // for a price amount and currency code.
+     if (!empty($data['commerce_price'])) {
+         if ($flatten_fields == 'true') {
+             if (isset($data['commerce_price']['amount']) && is_numeric($data['commerce_price']['amount'])) {
+                 $amount = $data['commerce_price']['amount'];
+             }
+             if (!empty($data['commerce_price']['currency_code']) && commerce_currency_load($data['commerce_price']['currency_code'])) {
+                 $currency_code = $data['commerce_price']['currency_code'];
+             }
+         }
+         else {
+             $langcode = key($data['commerce_price']);
+
+             if (isset($data['commerce_price'][$langcode][0]['amount']) && is_numeric($data['commerce_price'][$langcode][0]['amount'])) {
+                 $amount = $data['commerce_price'][$langcode][0]['amount'];
+             }
+             if (!empty($data['commerce_price'][$langcode][0]['currency_code']) && commerce_currency_load($data['commerce_price'][$langcode][0]['currency_code'])) {
+                 $currency_code = $data['commerce_price'][$langcode][0]['currency_code'];
+             }
+         }
+     }
+
+     // If not, look also in the column specific properties.
+     if (isset($data['commerce_price_amount']) && is_numeric($data['commerce_price_amount'])) {
+         $amount = $data['commerce_price_amount'];
+     }
+     if (!empty($data['commerce_price_currency_code']) && commerce_currency_load($data['commerce_price_currency_code'])) {
+         $currency_code = $data['commerce_price_currency_code'];
+     }
+
+     if (is_null($amount)) {
+         return services_error(t('You must specify a numeric commerce_price_amount value'), 400);
+     }
+     elseif (is_null($currency_code)) {
+         return services_error(t('You must specify a valid commerce_price_currency_code value'), 400);
+     }
+
+
      $products = $data['products'];
      unset($data['products']);
      foreach($data as $key=>$value){
@@ -459,6 +514,7 @@ function commerce_services_product_update($product_id, $data, $flatten_fields) {
      }
      return $product_node;
  } else {
+     error_log("tres");
      $product = commerce_product_load($product_id);
      if (!commerce_product_access('update', $product)) {
          return services_error(t('Access to this operation not granted'), 401);
@@ -467,10 +523,14 @@ function commerce_services_product_update($product_id, $data, $flatten_fields) {
  }
 }
 
-function _cs_product_update($product_id, $data, $flatten_fields) {
+function _cs_product_update($product_id, $data, $flatten_fields) {error_log(__FILE__." ".__FUNCTION__);
 
     if (!empty($data['size'])) {
+        //get the type from rails
         $res = field_info_instances('commerce_product', $data['type']);
+        #$res = field_info_instances('commerce_product', 'clothing');
+        error_log("res: ".serialize($res));
+
         foreach ($res as $key1=>$value1){
             if (preg_match('/(.*)(field)(.*)(size)(.*)/ism',$key1,$matches)) {
                 if ($data['type'] == 'product') {
@@ -478,6 +538,7 @@ function _cs_product_update($product_id, $data, $flatten_fields) {
                     if ($size_id) {
                         $data[$matches[0]] = $size_id;
                     }
+
                 } else {
                     $data[$matches[0]]=$data['size'];
                 }
@@ -485,6 +546,7 @@ function _cs_product_update($product_id, $data, $flatten_fields) {
         }
         unset($data['size']);
     }
+
 
     //images saving
     if ($data['image']) {
@@ -497,7 +559,10 @@ function _cs_product_update($product_id, $data, $flatten_fields) {
         unset($data['image']);
     }
 
+    error_log("About to update product with ".serialize($data));
+
     $product = commerce_services_update_entity('commerce_product', $product_id, $data, $flatten_fields);
+
     if (!empty($data['commerce_stock']))
     {
         //===========fitmoo call=============

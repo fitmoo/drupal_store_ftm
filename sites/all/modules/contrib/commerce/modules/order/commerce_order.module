@@ -773,7 +773,6 @@ function commerce_order_save($order) {
             }
         }
     }
-
     return entity_get_controller('commerce_order')->save($order);
 }
 
