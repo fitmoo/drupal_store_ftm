@@ -419,17 +419,17 @@ function commerce_services_product_create_access($data) {
  * @see commerce_services_update_entity()
  */
 function commerce_services_product_update($product_id, $data, $flatten_fields) {
-    error_log("--------------------------------------");
+   /* error_log("--------------------------------------");
     error_log(__FILE__." ".__FUNCTION__);
     error_log("product_id: ".$product_id);
     error_log("data: ".serialize($data));
     error_log("flatten_fields: ".$flatten_fields);
     error_log(" ");
     error_log("backtrace: ".serialize(debug_backtrace()));
-    error_log(" ");
+    error_log(" ");*/
  global $user;
  if(is_array($data['items'][0])) {
-     error_log("uno");
+     //error_log("uno");
       $array = array();
       foreach($data['items'][0] as $key => $items){
           $product = commerce_product_load($items[0]);
@@ -440,7 +440,7 @@ function commerce_services_product_update($product_id, $data, $flatten_fields) {
       }
       return $array;
  } else if ($data['node'] == "true") {
-     error_log("dos");
+     //error_log("dos");
      unset($data['node']);
      $product_node = node_load($product_id);
      $uid = $user->uid;
@@ -453,7 +453,7 @@ function commerce_services_product_update($product_id, $data, $flatten_fields) {
      if (!empty($data['title'])) {$product_node->title = $data['title'];unset($data['title']);}
      if (!empty($data['sku'])) {$product_node->sku = $data['sku'];  unset($data['sku']);}
      if (!empty($data['description'])) {$product_node->body['und'][0]['value'] = $data['description']; unset($data['description']);}
-     if (is_array($data['products'][0])) {$products = $data['products'][0];}
+ /*    if (is_array($data['products'][0])) {$products = $data['products'][0];}
 
 
      // Ensure the request specifies a commerce_price amount and currency_code.
@@ -511,10 +511,10 @@ function commerce_services_product_update($product_id, $data, $flatten_fields) {
          }
          return array('node_product'=>$product_node, 'items'=>$array);
 
-     }
+     }*/
      return $product_node;
  } else {
-     error_log("tres");
+     //error_log("tres");
      $product = commerce_product_load($product_id);
      if (!commerce_product_access('update', $product)) {
          return services_error(t('Access to this operation not granted'), 401);
@@ -529,7 +529,7 @@ function _cs_product_update($product_id, $data, $flatten_fields) {error_log(__FI
         //get the type from rails
         $res = field_info_instances('commerce_product', $data['type']);
         #$res = field_info_instances('commerce_product', 'clothing');
-        error_log("res: ".serialize($res));
+        #error_log("res: ".serialize($res));
 
         foreach ($res as $key1=>$value1){
             if (preg_match('/(.*)(field)(.*)(size)(.*)/ism',$key1,$matches)) {
