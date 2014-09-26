@@ -2069,7 +2069,10 @@ function commerce_services_validate_field_value($entity_type, $entity, $field_na
  */
 function commerce_services_update_field_value($entity_type, $entity, $field_info, $value, $langcode = NULL, $delta = NULL) {
   $field_name = $field_info['field_name'];
-    error_log(__FILE__);error_log(__FUNCTION__);error_log("entity_type: ".serialize($entity_type));error_log("value: ".serialize($value));error_log("columns: ".serialize($field_info["columns"]));
+    error_log(__FILE__);error_log(__FUNCTION__);
+    error_log("entity_type: ".serialize($entity_type));
+    error_log("value: ".serialize($value));
+    error_log("columns: ".serialize($field_info["columns"]));
   // If the value given is an array...
   if (is_array($value)) {
     // Ensure the keys given for the value array all match columns in the field
