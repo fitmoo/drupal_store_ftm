@@ -215,7 +215,10 @@ function commerce_services_order_update($order_id, $data, $flatten_fields) {
             $data['commerce_customer_billing'] = $profilenew2->profile_id;
         }
     }
+
   $order = commerce_services_update_entity('commerce_order', $order_id, $data, $flatten_fields);
+  error_log("Order: ".serialize($order));
+
   if ($result or $result2) {
      $order->commerce_customer_shipping_entities[$profilenew->profile_id] = $profilenew;
      commerce_order_save($order);
@@ -243,7 +246,6 @@ function commerce_services_order_update($order_id, $data, $flatten_fields) {
          // }
       //}
 	  //}
-
   return $order;
 }
 
