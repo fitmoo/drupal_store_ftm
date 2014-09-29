@@ -741,8 +741,8 @@ function commerce_order_new($uid = 0, $status = NULL, $type = 'commerce_order') 
  *   SAVED_NEW or SAVED_UPDATED depending on the operation performed.
  */
 function commerce_order_save($order) {
-    error_log(__FILE__." ".__FUNCTION__);
-    error_log("_SESSION: ".serialize($_SESSION));
+    //error_log(__FILE__." ".__FUNCTION__);
+    //error_log("_SESSION: ".serialize($_SESSION));
     $info = array();
     error_log("order->status: ".$order->status);
     if($order->status == "Completed:Accepted"){
@@ -760,7 +760,7 @@ function commerce_order_save($order) {
                     //error_log("line item: ".serialize($line_item));
                     if($line_item->type != "shipping"){
                         $product = commerce_product_load($line_item->commerce_product["und"][0]["product_id"]);
-                        error_log("product: ".serialize($product));
+                        //error_log("product: ".serialize($product));
                     }
                 }
 

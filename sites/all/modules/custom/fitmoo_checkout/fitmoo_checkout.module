@@ -526,8 +526,6 @@ function fitmoo_checkout_calculate_commissions($params){
     //and what the buyer is actually paying
     $product = get_object_vars(commerce_product_load($params["productID"]));
 
-    //error_log(serialize($product));
-
     //check if there is a difference between the two shipping rates
     if($product["field_shipping_full_amount"]["und"][0]["value"] != $product["field_shipping_buyer_amount"]["und"][0]["value"]){
 
@@ -659,9 +657,6 @@ function fitmoo_checkout_calculate_commissions($params){
  * Implements hook_commerce_checkout_complete().
  */
 function fitmoo_checkout_commerce_checkout_complete($order) {
-    //error_log(__FILE__);
-    //error_log(__FUNCTION__);
-    //error_log("order: ".serialize($order));
     /**
      * Start transaction here
      * Note the transaction extends to functions called in this one, so fitmoo_checkout_calculate_commissions
@@ -683,9 +678,6 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
             $info["line_items"]++;
             // Load commerce line item by line item id.
             $line_item = commerce_line_item_load($line_item_id['line_item_id']);
-            //error_log(" ");
-            //error_log("line_item->type: ".$line_item->type);
-            //error_log(" ");
             // We do not want to include shipping cost in userpoints.
             if ($line_item->type != 'shipping') {
                 // Load commerce product by product id.
@@ -693,10 +685,6 @@ function fitmoo_checkout_commerce_checkout_complete($order) {
                 $temp = field_get_items('commerce_line_item', $line_item, 'commerce_product');
 
                 $product = commerce_product_load($temp[0]['product_id']);
-                //error_log("order: ".serialize($order));
-                //error_log(" ");
-                //error_log("temp: ".serialize($temp));
-                //error_log("product: ".serialize($product));
                 // Create parameters so that we can calculate the commissions
                 $params = array(
                     'seller_uid' => $product->uid,  //seller uid
@@ -2127,7 +2115,6 @@ function fitmoo_checkout_email_order_cancel_bybuyer($order){
 }
 
 function fitmoo_checkout_braintree_settle($order){
-
     $payment_method = commerce_payment_method_instance_load('braintree_tr|commerce_payment_braintree_tr');
     commerce_braintree_initialize($payment_method);
     $transactions = commerce_payment_transaction_load_multiple(array(), array('order_id' => $order->order_id));
@@ -2135,7 +2122,6 @@ function fitmoo_checkout_braintree_settle($order){
     foreach ($transactions as $transaction) {
 
         if ($transaction->remote_status == 'authorized') {
-            //$result = Braintree_Transaction::submitForSettlement('the_transaction_id', '35.00');
             $result = Braintree_Transaction::submitForSettlement($transaction->remote_id);
             if ($result->success) {
                 $order->status = 'Completed';

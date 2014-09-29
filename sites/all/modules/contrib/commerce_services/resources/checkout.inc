@@ -66,6 +66,7 @@ function commerce_services_checkout_retrieve_access($checkout_id) {
  * Creates a new checkout.
  */
 function commerce_services_checkout_create($data, $flatten_fields) {
+        error_log(__FILE__." ".__FUNCTION__);
         //    $form, &$form_state, $order, $payment_method
 
         global $user;
@@ -172,7 +173,6 @@ function commerce_services_checkout_create($data, $flatten_fields) {
 
     $option = array();
     $post_values['tr_data'] = $trData;
-
     $option['method'] = 'POST';
     $option['data'] = drupal_http_build_query($post_values);
     $request = drupal_http_request($form['#action'], $option);
