@@ -2071,6 +2071,7 @@ function commerce_services_update_field_value($entity_type, $entity, $field_info
   $field_name = $field_info['field_name'];
     error_log(__FILE__);error_log(__FUNCTION__);
     error_log("entity_type: ".serialize($entity_type));
+    error_log("field info: ".serialize($field_info));
     error_log("value: ".serialize($value));
     error_log("columns: ".serialize($field_info["columns"]));
   // If the value given is an array...
@@ -2086,7 +2087,8 @@ function commerce_services_update_field_value($entity_type, $entity, $field_info
     // value to be an array keyed by the column name.
     $value = array(key($field_info['columns']) => $value);
   }
-  else {error_log(__FILE__." ".__FUNCTION__." ".__LINE__." the error is happening");
+  else {
+	error_log(__FILE__." ".__FUNCTION__." ".__LINE__." the error is happening");
     // Return an error if an array was given for a single column field instead
     // of a scalar.
     return services_error(t('Invalid @field value given #2', array('@field' => $field_name)), 400);
@@ -2103,9 +2105,11 @@ function commerce_services_update_field_value($entity_type, $entity, $field_info
 
   // Return an error if a delta value over 0 is given for a single value field.
   if ($field_info['cardinality'] == 1 && !empty($delta)) {
+	error_log(__FILE__." ".__FUNCTION__." ".__LINE__." the error is happening");
     return services_error(t('Invalid delta value @delta given for single-value field @field', array('@delta' => $delta, '@field' => $field_name)), 400);
   }
   elseif ($field_info['cardinality'] != 1 && $delta === NULL) {
+	error_log(__FILE__." ".__FUNCTION__." ".__LINE__." the error is happening");
     // Return an error if a delta value was not specified for a multi-value field.
     return services_error(t('Delta value required for multi-value field @field', array('@field' => $field_name)), 400);
   }
