@@ -1990,6 +1990,7 @@ function fitmoo_checkout_braintree_refund($order){
             $refund = $result->transaction;
             $refundedTransactionId = $refund->refundedTransactionId;
             _save_transaction ($order, $transaction, $refundedTransactionId, $result);
+            
             return $order;
         } else {
             //return services_error(t($result->message), 500);
@@ -2002,6 +2003,19 @@ function fitmoo_checkout_braintree_refund($order){
             $refund = $result->transaction;
             $refundedTransactionId = $refund->refundedTransactionId;
             _save_transaction ($order, $transaction, $refundedTransactionId, $result);
+
+            //this should be in its own function due to the fact we repeat it 3 times...leaving for now
+            $num_updated = db_update('fitmoo_user_accounting') // Table name no longer needs {}
+            ->fields(array(
+                    'status' => "cancelled",
+                ))
+                ->condition('orderID', $order->order_id, '=')
+                ->execute();
+
+            //we update the user's totals using the magic drupal method in fitmoo_admintools.module
+            _update_user_balance($order->field_seller["und"][0]["uid"]);
+
+
             return $order;
         } else {
             //return services_error(t($result->message), 500);
@@ -2021,6 +2035,7 @@ function fitmoo_checkout_braintree_refund($order){
             error_log(__FUNCTION__." three");
             error_log($order->field_seller["und"][0]["uid"]);
 
+            //this should be in its own function due to the fact we repeat it 3 times...leaving for now
             $num_updated = db_update('fitmoo_user_accounting') // Table name no longer needs {}
             ->fields(array(
                     'status' => "cancelled",
@@ -2028,7 +2043,7 @@ function fitmoo_checkout_braintree_refund($order){
                 ->condition('orderID', $order->order_id, '=')
                 ->execute();
 
-            //we need to update the user's totals using the magic drupal method in fitmoo_admintools.module
+            //we update the user's totals using the magic drupal method in fitmoo_admintools.module
             _update_user_balance($order->field_seller["und"][0]["uid"]);
 
             return $order;
