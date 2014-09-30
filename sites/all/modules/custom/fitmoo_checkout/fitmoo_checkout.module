@@ -867,22 +867,26 @@ function fitmoo_checkout_endiciaSendLabelTOSellerAndBuyer($order) {
             $info['LabelLink'] = $order->field_shipping_label_url['und'][0]['value'];
             $term = taxonomy_term_load($product->field_size['und'][0]['tid']);
             $info['size'] = $term->name;
-
             $info['OrderId'] = $order->order_id;
+
             $buyer = user_load($order->uid);
+
             $info['BuyerEmail'] = $buyer->mail;
             $info['OrderDate'] = $order->changed;
+            $info['shipping_type_id'] = $order->field_shipping_type_id["und"]["0"]["value"];
+            $info['shipping_carrier'] = $order->field_shipping_carrier["und"]["0"]["value"];
             $info['total'] = $total;
 
             $info_buyer['qty'] = $line_item->quantity;
             $info_buyer['uri'] = $product->field_image['und'][0]['uri'];
             $info_buyer['ProductName'] = $product->title;
             $info_buyer['TrackingNum'] = $order->field_tracking['und'][0]['value'];
-            //$info_buyer['ShippingStatus'] = 'ORDER Status in progress';
             $info_buyer['ShippingStatus'] = 'Shipped';
 
             $info_buyer['OrderId'] = $order->order_id;
             $info_buyer['BuyerEmail'] = $buyer->mail;
+            $info_buyer['shipping_type_id'] = $order->field_shipping_type_id["und"]["0"]["value"];
+            $info_buyer['shippingCarrier'] = $order->field_shipping_carrier["und"]["0"]["value"];
             $info_buyer['total'] = $total;
 
         }else if($line_item->type == 'shipping'){
@@ -891,6 +895,7 @@ function fitmoo_checkout_endiciaSendLabelTOSellerAndBuyer($order) {
         }
 
     }
+    error_log("buyer: ".serialize($buyer));
     $info['ordertotal'] = commerce_currency_amount_to_decimal($order->commerce_order_total['und'][0]['amount'],'USD');
     $profile =  intval($order->commerce_customer_shipping['und'][0]['profile_id']);
 
@@ -1418,58 +1423,70 @@ function fitmoo_order_complete_referer_email($uid,$info){
     return TRUE;
 }
 
-function fitmoo_checkout_LabelEmail($seller_email,$buyer_uid,$info,$info_buyer){
+function fitmoo_checkout_LabelEmail($seller_email, $buyer_uid, $info, $info_buyer){
+    error_log(__FILE__." ".__FUNCTION__);
+    error_log("MOTHER FUCKING SHIPPING TYPE ID: ".serialize($info["field_shipping_type_id"]));
 
+    /**
+     * SELLER MAIL
+     * We only send a shipping message to the seller if there's a label, so NOT for custom shipping
+     */
 
+        error_log("custom_shipping");
+        $module = 'fitmoo_checkout';
+        $key = 'order';
+        $language = language_default();
+        $params = array();
+        $send = TRUE;
+        //$to_user = user_load($seller_uid);
+        $from = 'store@fitmoo.com';
+        $to = $seller_email;
 
-    //=========SELLER_MAIL
-    $module = 'fitmoo_checkout';
-    $key = 'order';
-    $language = language_default();
-    $params = array();
-    $send = TRUE;
-    //$to_user = user_load($seller_uid);
-    $from = 'store@fitmoo.com';
-    $to = $seller_email;
+        //$to = 'george@gtekg.com';
 
-    //$to = 'george@gtekg.com';
+        $headers = array(
+            'MIME-Version' => '1.0',
+            'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
+            'Content-Transfer-Encoding' => '8Bit',
+            'X-Mailer' => 'Drupal'
+        );
+        $params['headers'] = $headers;
 
-    $headers = array(
-        'MIME-Version' => '1.0',
-        'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
-        'Content-Transfer-Encoding' => '8Bit',
-        'X-Mailer' => 'Drupal'
-    );
-    $params['headers'] = $headers;
+        $array = explode('/',$info['LabelLink']);
+        $f_name = $array[count($array)-1];
 
-    $array = explode('/',$info['LabelLink']);
-    $f_name = $array[count($array)-1];
+        $params['attachments'][] = array(
+            'filepath' => DRUPAL_ROOT.'/endicia_labels/endicia_labels/'.$f_name,
+            'filecontent' => 'Shipping Label.',
+            'filename' => $info['LabelLink'],
+            'filemime' => 'application/pdf',
+        );
 
-    $params['attachments'][] = array(
-        'filepath' => DRUPAL_ROOT.'/endicia_labels/endicia_labels/'.$f_name,
-        'filecontent' => 'Shipping Label.',
-        'filename' => $info['LabelLink'],
-        'filemime' => 'application/pdf',
-    );
+        $message = drupal_mail($module, $key, $to, $language, $params, $from, FALSE);
 
-    $message = drupal_mail($module, $key, $to, $language, $params, $from, FALSE);
+        $message['subject'] = "Your shipping label for #".$info['OrderId']." from ".$info['BuyerEmail']." at Fitmoo.com";
 
+        error_log("info: ".serialize($info));
 
-    $message['subject'] = "Your shipping label for #".$info['OrderId']." from ".$info['BuyerEmail']." at Fitmoo.com";
+        $body = theme('labelseller',$info);
 
-    $body = theme('labelseller',$info);
+        $message['body'] = array();
+        $message['body'][] = $body;
 
-    $message['body'] = array();
-    $message['body'][] = $body;
-
-    // Retrieve the responsible implementation for this message.
-    $system = drupal_mail_system($module, $key);
-    // Format the message body.
-    $message = $system->format($message);
-    // Send e-mail.
-    $message['result'] = $system->mail($message);
-
-    //=========BUYER_MAIL
+        // Retrieve the responsible implementation for this message.
+        $system = drupal_mail_system($module, $key);
+        // Format the message body.
+        $message = $system->format($message);
+        if($info["field_shipping_type_id"] != 4) {//custom shipping
+            // Send e-mail.
+            $message['result'] = $system->mail($message);
+        }
+    error_log("wtf");
+    /**
+     * BUYER MAIL
+     *
+     * We send a shipping email to the buyer regardless of the shipping method
+     */
     $module = 'fitmoo_checkout';
     $key = 'order';
     $language = language_default();
@@ -1478,6 +1495,9 @@ function fitmoo_checkout_LabelEmail($seller_email,$buyer_uid,$info,$info_buyer){
     $to_user = user_load($buyer_uid);
     $from = 'store@fitmoo.com';
     $to = $to_user->mail;
+
+    error_log("to_user: ".serialize($to_user));
+
 
     //$to = 'george@gtekg.com';
 
@@ -1493,6 +1513,8 @@ function fitmoo_checkout_LabelEmail($seller_email,$buyer_uid,$info,$info_buyer){
     $message = drupal_mail($module, $key, $to, $language, $params, $from, FALSE);
 
     $message['subject'] = "Your item has shipped Order #".$info_buyer['OrderId']." from ".$info_buyer['BuyerEmail']." at Fitmoo.com";
+
+    error_log("info_buyer: ".serialize($info_buyer));
 
     $body = theme('labelbuyer',$info_buyer);
 
@@ -1990,7 +2012,7 @@ function fitmoo_checkout_braintree_refund($order){
             $refund = $result->transaction;
             $refundedTransactionId = $refund->refundedTransactionId;
             _save_transaction ($order, $transaction, $refundedTransactionId, $result);
-            
+
             return $order;
         } else {
             //return services_error(t($result->message), 500);

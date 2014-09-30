@@ -167,19 +167,20 @@ function commerce_services_product_retrieve_access($product_id) {
  *
  * @see commerce_services_update_entity()
  */
-function commerce_services_order_update($order_id, $data, $flatten_fields) {
+function commerce_services_order_update($order_id, $data, $flatten_fields)
+{
     global $user;
 
     error_log("-------------------------");
     error_log(__FILE__);
     error_log(__FUNCTION__);
-    error_log("order_id: ".$order_id);
-    error_log("data: ".serialize($data));
-    error_log("flatten_fields: ".serialize($flatten_fields));
+    error_log("order_id: " . $order_id);
+    error_log("data: " . serialize($data));
+    error_log("flatten_fields: " . serialize($flatten_fields));
     error_log("-------------------------");
 
-    if(!empty($data['commerce_customer_shipping'])) {
-      //  $profiles = commerce_customer_profile_load_multiple(array(), array('type' => 'shipping','uid' => $user->uid,'status'=> TRUE));
+    if (!empty($data['commerce_customer_shipping'])) {
+        //  $profiles = commerce_customer_profile_load_multiple(array(), array('type' => 'shipping','uid' => $user->uid,'status'=> TRUE));
 //        if ($profiles) {
 //// Prepare the options for supplying to a select box
 //            $shipping_options = array();
@@ -190,22 +191,22 @@ function commerce_services_order_update($order_id, $data, $flatten_fields) {
 //                foreach ($field_values as $key=>$value) {
 //                    if($data['commerce_customer_shipping']['key'] != $value) { break;}
 //                }
-          //  }
+        //  }
 
-          $profilenew = commerce_customer_profile_new('shipping', $user->uid);
-          foreach ($data['commerce_customer_shipping'] as $key=>$value) {
-              $profilenew->commerce_customer_address['und'][0][$key] = $value;
-          }
-          $result = commerce_customer_profile_save($profilenew);
+        $profilenew = commerce_customer_profile_new('shipping', $user->uid);
+        foreach ($data['commerce_customer_shipping'] as $key => $value) {
+            $profilenew->commerce_customer_address['und'][0][$key] = $value;
+        }
+        $result = commerce_customer_profile_save($profilenew);
 
         unset($data['commerce_customer_shipping']);
         if ($result) {
             $data['commerce_customer_shipping'] = $profilenew->profile_id;
         }
     }
-    if(!empty($data['commerce_customer_billing'])) {
+    if (!empty($data['commerce_customer_billing'])) {
         $profilenew2 = commerce_customer_profile_new('billing', $user->uid);
-        foreach ($data['commerce_customer_billing'] as $key=>$value) {
+        foreach ($data['commerce_customer_billing'] as $key => $value) {
             $profilenew2->commerce_customer_address['und'][0][$key] = $value;
         }
         $result2 = commerce_customer_profile_save($profilenew2);
@@ -216,9 +217,26 @@ function commerce_services_order_update($order_id, $data, $flatten_fields) {
         }
     }
 
-  $order = commerce_services_update_entity('commerce_order', $order_id, $data, $flatten_fields);
-  error_log("Order: ".serialize($order));
+    /**
+     * TODO add code to the shipping email method that skips attaching the label if this is a custom shipping order
+     */
 
+    //get the order from the order number
+    $o = commerce_services_retrieve_entity("commerce_order", $order_id, false, false);
+
+     //compare if new shipping status is shipped and the old status is pending
+    //if so, send the shipping email
+    if($data["status"] == "Shipping: shipped" && $o->status == "pending"){
+        fitmoo_checkout_endiciaSendLabelTOSellerAndBuyer($o);
+    }
+
+  $order = commerce_services_update_entity('commerce_order', $order_id, $data, $flatten_fields);
+
+  //error_log("Order: ".serialize($order));
+
+    /**
+     * TODO Figure out what's going on here...obviously something to do with profiles
+     */
   if ($result or $result2) {
      $order->commerce_customer_shipping_entities[$profilenew->profile_id] = $profilenew;
      commerce_order_save($order);
