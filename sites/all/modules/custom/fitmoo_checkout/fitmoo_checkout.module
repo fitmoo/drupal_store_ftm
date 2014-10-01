@@ -1975,8 +1975,7 @@ function fitmoo_checkout_email_eventconf_buyer($order){
 
 }
 
-
-function fitmoo_checkout_braintree_refund($order){
+    function fitmoo_checkout_braintree_refund($order){
     error_log(__FILE__." ".__FUNCTION__);
     error_log("refunded order: ".serialize($order));
     $path = drupal_get_path('module', 'services');
@@ -2009,6 +2008,12 @@ function fitmoo_checkout_braintree_refund($order){
             $refundedTransactionId = $refund->refundedTransactionId;
             _save_transaction ($order, $transaction, $refundedTransactionId, $result);
 
+
+            $product = commerce_product_load($product_id);
+
+            error_log("product: ".serialize($product));
+
+
             return $order;
         } else {
             //return services_error(t($result->message), 500);
@@ -2040,7 +2045,7 @@ function fitmoo_checkout_braintree_refund($order){
             drupal_set_message(t($result->message));
             return;
         }
-    }else if ($transaction->status == Braintree_Transaction::AUTHORIZED) {
+    }else if ($transaction->status == Braintree_Transaction::AUTHORIZED) {//this is never
         /**
          * TODO If a buyer or seller cancels an order we cancel it with braintree and set the status of the order to cancelled in our system
          */
