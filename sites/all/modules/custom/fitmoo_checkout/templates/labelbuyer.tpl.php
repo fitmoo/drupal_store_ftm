@@ -111,10 +111,9 @@ $redirect_base = variable_get('anonymous_redirect_base', '');
                                 </div>
                                 <div style="float: right; width: 50%;">
                                     <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';">Shiping Address:</div>
-                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $ShipToName;?></b></div>
-                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $ShipToAddress; ?></b></div>
-                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $ShipToAddress2; ?></b></div>
-                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $ShipToCity; ?> <?php print $ShipToState; ?> <?php print $ShipToZipCode; ?></b></div>
+                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $name;?></b></div>
+                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $street;?></b></div>
+                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $city; ?> <?php print $state; ?> <?php print $zip; ?></b></div>
                                 </div>
                             </div>
                         </div>

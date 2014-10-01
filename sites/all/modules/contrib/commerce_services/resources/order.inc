@@ -219,7 +219,8 @@ function commerce_services_order_update($order_id, $data, $flatten_fields)
        $send_email = true;
     }
 
-    $order = commerce_services_update_entity('commerce_order', $order_id, $data, $flatten_fields);
+    //commented out so i don't have to keep hitting the admin to update the order state to pending
+    //$order = commerce_services_update_entity('commerce_order', $order_id, $data, $flatten_fields);
 
     if($send_email) {
         //get the order again so we have the updated fields and explicitly set the flags for flattening (or not)

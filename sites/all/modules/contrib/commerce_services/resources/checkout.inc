@@ -179,11 +179,7 @@ function commerce_services_checkout_create($data, $flatten_fields) {
     $feedback = explode('?', $request->headers['location']);
     $feedback=$feedback[1];
     commerce_braintree_tr_process_transaction($order, $payment_method, $feedback, $redirect = TRUE);
-
-
 }
-
-
 
 /**
  * Determines an API user's access to create a new checkout.
