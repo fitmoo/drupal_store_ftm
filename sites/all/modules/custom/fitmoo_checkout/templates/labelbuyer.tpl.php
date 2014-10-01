@@ -83,7 +83,9 @@ $redirect_base = variable_get('anonymous_redirect_base', '');
 
         <section>
             <div style="width:1000px; margin: 0 auto; border-bottom: 2px solid #a9a9a9; padding-top: 20px; padding-bottom: 20px;">
-                <p style="font-size: 18px; line-height: 30px; font-family: 'bentonsansbook'; width: 95%;">Thank you for shopping with us. We would like to let you know that your item is on its way. To view details or to make any changes to this shipment or manage other orders, please visit <a style="color:#38a0dc; text-decoration: none;" href="<?php print $redirect_base;?>/dashboard/sales/<?php print $OrderId;?>">Your Orders</a> on Fitmoo.com</p>
+                <p style="font-size: 18px; line-height: 30px; font-family: 'bentonsansbook'; width: 95%;">
+                    Thank you for shopping with us. We would like to let you know that your item is on its way. To view details or to make any changes to this shipment or manage other orders, please visit <a style="color:#38a0dc; text-decoration: none;" href="<?php print $redirect_base;?>/dashboard/sales/<?php print $OrderId;?>">Your Orders</a> on Fitmoo.com
+                </p>
             </div>
         </section>
         <section class="products">
@@ -108,10 +110,11 @@ $redirect_base = variable_get('anonymous_redirect_base', '');
                                     <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';">Tracking #:&nbsp;<?php print $TrackingNum; ?></a></div>
                                 </div>
                                 <div style="float: right; width: 50%;">
-                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';">Send to:</div>
+                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';">Shiping Address:</div>
                                     <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $ShipToName;?></b></div>
                                     <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $ShipToAddress; ?></b></div>
                                     <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $ShipToAddress2; ?></b></div>
+                                    <div style="color: #333; font-size: 18px; line-height: 24px; text-decoration: none; font-family: 'bentonsansregular';"><b><?php print $ShipToCity; ?> <?php print $ShipToState; ?> <?php print $ShipToZipCode; ?></b></div>
                                 </div>
                             </div>
                         </div>

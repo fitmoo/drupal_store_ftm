@@ -833,6 +833,13 @@ function fitmoo_checkout_commerce_cart_product_add($order, $product, $quantity, 
  * send mail to product seller and to product buyer
  */
 function fitmoo_checkout_endiciaSendLabelTOSellerAndBuyer($order) {
+
+    error_log("---------------------------");
+    error_log("order object used to set email values: ".serialize($order));
+    error_log("---------------------------");
+
+
+
     // Iterate through every commerce line item added in product.
     $info = array();
     $info_buyer = array();
@@ -861,6 +868,7 @@ function fitmoo_checkout_endiciaSendLabelTOSellerAndBuyer($order) {
             //send email to seller
             $seller = user_load($product->uid);
             $total =  commerce_currency_amount_to_decimal($product->commerce_price['und'][0]['amount'],'USD');
+            $info["SellerEmail"] = $seller->mail;
             $info['qty'] = $line_item->quantity;
             $info['uri'] = $product->field_image['und'][0]['uri'];
             $info['ProductName'] = $product->title;
@@ -870,13 +878,17 @@ function fitmoo_checkout_endiciaSendLabelTOSellerAndBuyer($order) {
             $info['OrderId'] = $order->order_id;
 
             $buyer = user_load($order->uid);
+            error_log("- - - - - - - - - - - - - - ");
+            error_log("buyer: ".serialize($buyer));
+            error_log("- - - - - - - - - - - - - - ");
 
             $info['BuyerEmail'] = $buyer->mail;
             $info['OrderDate'] = $order->changed;
-            $info['shipping_type_id'] = $order->field_shipping_type_id["und"]["0"]["value"];
-            $info['shipping_carrier'] = $order->field_shipping_carrier["und"]["0"]["value"];
+            $info['field_shipping_type_id'] = $order->field_shipping_type_id["und"]["0"]["value"];
+            $info['field_shipping_carrier'] = $order->field_shipping_carrier["und"]["0"]["value"];
             $info['total'] = $total;
 
+            $info_buyer["SellerEmail"] = $seller->mail;
             $info_buyer['qty'] = $line_item->quantity;
             $info_buyer['uri'] = $product->field_image['und'][0]['uri'];
             $info_buyer['ProductName'] = $product->title;
@@ -885,9 +897,13 @@ function fitmoo_checkout_endiciaSendLabelTOSellerAndBuyer($order) {
 
             $info_buyer['OrderId'] = $order->order_id;
             $info_buyer['BuyerEmail'] = $buyer->mail;
-            $info_buyer['shipping_type_id'] = $order->field_shipping_type_id["und"]["0"]["value"];
-            $info_buyer['shippingCarrier'] = $order->field_shipping_carrier["und"]["0"]["value"];
+            $info_buyer['field_shipping_type_id'] = $order->field_shipping_type_id["und"]["0"]["value"];
+            $info_buyer['field_shipping_carrier'] = $order->field_shipping_carrier["und"]["0"]["value"];
+
             $info_buyer['total'] = $total;
+
+            //$info_buyer['']
+
 
         }else if($line_item->type == 'shipping'){
             $info['shipping'] = commerce_currency_amount_to_decimal($line_item->commerce_unit_price['und'][0]['amount'],'USD');
@@ -895,7 +911,7 @@ function fitmoo_checkout_endiciaSendLabelTOSellerAndBuyer($order) {
         }
 
     }
-    error_log("buyer: ".serialize($buyer));
+
     $info['ordertotal'] = commerce_currency_amount_to_decimal($order->commerce_order_total['und'][0]['amount'],'USD');
     $profile =  intval($order->commerce_customer_shipping['und'][0]['profile_id']);
 
@@ -1424,15 +1440,12 @@ function fitmoo_order_complete_referer_email($uid,$info){
 }
 
 function fitmoo_checkout_LabelEmail($seller_email, $buyer_uid, $info, $info_buyer){
-    error_log(__FILE__." ".__FUNCTION__);
-    error_log("MOTHER FUCKING SHIPPING TYPE ID: ".serialize($info["field_shipping_type_id"]));
 
     /**
      * SELLER MAIL
      * We only send a shipping message to the seller if there's a label, so NOT for custom shipping
      */
 
-        error_log("custom_shipping");
         $module = 'fitmoo_checkout';
         $key = 'order';
         $language = language_default();
@@ -1441,8 +1454,6 @@ function fitmoo_checkout_LabelEmail($seller_email, $buyer_uid, $info, $info_buye
         //$to_user = user_load($seller_uid);
         $from = 'store@fitmoo.com';
         $to = $seller_email;
-
-        //$to = 'george@gtekg.com';
 
         $headers = array(
             'MIME-Version' => '1.0',
@@ -1464,7 +1475,7 @@ function fitmoo_checkout_LabelEmail($seller_email, $buyer_uid, $info, $info_buye
 
         $message = drupal_mail($module, $key, $to, $language, $params, $from, FALSE);
 
-        $message['subject'] = "Your shipping label for #".$info['OrderId']." from ".$info['BuyerEmail']." at Fitmoo.com";
+        $message['subject'] = "Your Fitmoo.com shipping label for order #".$info['OrderId']." to ".$info['BuyerEmail']." is ready";
 
         error_log("info: ".serialize($info));
 
@@ -1481,7 +1492,7 @@ function fitmoo_checkout_LabelEmail($seller_email, $buyer_uid, $info, $info_buye
             // Send e-mail.
             $message['result'] = $system->mail($message);
         }
-    error_log("wtf");
+
     /**
      * BUYER MAIL
      *
@@ -1498,9 +1509,6 @@ function fitmoo_checkout_LabelEmail($seller_email, $buyer_uid, $info, $info_buye
 
     error_log("to_user: ".serialize($to_user));
 
-
-    //$to = 'george@gtekg.com';
-
     $headers = array(
         'MIME-Version' => '1.0',
         'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
@@ -1512,7 +1520,7 @@ function fitmoo_checkout_LabelEmail($seller_email, $buyer_uid, $info, $info_buye
 
     $message = drupal_mail($module, $key, $to, $language, $params, $from, FALSE);
 
-    $message['subject'] = "Your item has shipped Order #".$info_buyer['OrderId']." from ".$info_buyer['BuyerEmail']." at Fitmoo.com";
+    $message['subject'] = "Your Fitmoo.com order #".$info_buyer['OrderId']." from ".$info['SellerEmail']." has shipped";
 
     error_log("info_buyer: ".serialize($info_buyer));
 

@@ -171,28 +171,7 @@ function commerce_services_order_update($order_id, $data, $flatten_fields)
 {
     global $user;
 
-    error_log("-------------------------");
-    error_log(__FILE__);
-    error_log(__FUNCTION__);
-    error_log("order_id: " . $order_id);
-    error_log("data: " . serialize($data));
-    error_log("flatten_fields: " . serialize($flatten_fields));
-    error_log("-------------------------");
-
     if (!empty($data['commerce_customer_shipping'])) {
-        //  $profiles = commerce_customer_profile_load_multiple(array(), array('type' => 'shipping','uid' => $user->uid,'status'=> TRUE));
-//        if ($profiles) {
-//// Prepare the options for supplying to a select box
-//            $shipping_options = array();
-//            $find = false;
-//            foreach ($profiles as $id => $profile) {
-//                $field_values = field_get_items('commerce_customer_profile', $profile, 'commerce_customer_address');
-//                $current_find = false;
-//                foreach ($field_values as $key=>$value) {
-//                    if($data['commerce_customer_shipping']['key'] != $value) { break;}
-//                }
-        //  }
-
         $profilenew = commerce_customer_profile_new('shipping', $user->uid);
         foreach ($data['commerce_customer_shipping'] as $key => $value) {
             $profilenew->commerce_customer_address['und'][0][$key] = $value;
@@ -217,22 +196,36 @@ function commerce_services_order_update($order_id, $data, $flatten_fields)
         }
     }
 
+
+    /*******************TOTAL HACK ALERT AHEAD cfo 10/1/2014************************************/
+
     /**
-     * TODO add code to the shipping email method that skips attaching the label if this is a custom shipping order
+     * TODO Read the following notes or waste a lot of your life wondering why emails aren't being sent correctly for custom shipping
+     *
+     * When getting the order from the order number the true and false here is vitally important
+     * although they aren't really setting the correct flags in drupal they are set so that
+     * we get the commerce_customer_shipping_entities in the order false, false, and true, true do not return it
+     *
+     * We should be able to just send the $order object, but it's not flattened in the same manner that $o is
+     * and since the sendLabel method below is called in more than one place, we want the same structure of an $order
      */
 
-    //get the order from the order number
-    $o = commerce_services_retrieve_entity("commerce_order", $order_id, false, false);
+    $o = commerce_services_retrieve_entity("commerce_order", $order_id, true, false);
 
-     //compare if new shipping status is shipped and the old status is pending
+    $send_email = false;
+    //compare if new shipping status is shipped and the old status is pending
     //if so, send the shipping email
     if($data["status"] == "Shipping: shipped" && $o->status == "pending"){
-        fitmoo_checkout_endiciaSendLabelTOSellerAndBuyer($o);
+       $send_email = true;
     }
 
-  $order = commerce_services_update_entity('commerce_order', $order_id, $data, $flatten_fields);
+    $order = commerce_services_update_entity('commerce_order', $order_id, $data, $flatten_fields);
 
-  //error_log("Order: ".serialize($order));
+    if($send_email) {
+        //get the order again so we have the updated fields and explicitly set the flags for flattening (or not)
+        $o = commerce_services_retrieve_entity("commerce_order", $order_id, true, false);
+        fitmoo_checkout_endiciaSendLabelTOSellerAndBuyer($o);
+    }
 
     /**
      * TODO Figure out what's going on here...obviously something to do with profiles
@@ -245,25 +238,7 @@ function commerce_services_order_update($order_id, $data, $flatten_fields)
      $order->commerce_customer_billing_entities[$profilenew2->profile_id] = $profilenew2;
      commerce_order_save($order);
   }
-  
-  //move this to firmoo checkout and use order_save_hook to process
 
- // if ($order->status == 'Shipping: Delivered') {
- //     $payment_method = commerce_payment_method_instance_load('braintree_tr|commerce_payment_braintree_tr');
- //     commerce_braintree_initialize($payment_method);
- //     $transactions = commerce_payment_transaction_load_multiple(array(), array('order_id' => $order->order_id));
-//      foreach ($transactions as $transaction) {
- //         if ($transaction->remote_status == 'authorized') {
- //             //$result = Braintree_Transaction::submitForSettlement('the_transaction_id', '35.00');
- //             $result = Braintree_Transaction::submitForSettlement($transaction->remote_id);
-//              if ($result->success) {
-//                  # Success
-//              } else {
-//                  print_r($result->errors);
-//              }
-         // }
-      //}
-	  //}
   return $order;
 }
 
