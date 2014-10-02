@@ -1820,15 +1820,12 @@ function fitmoo_checkout_commerce_order_presave($order) {
                 $order = fitmoo_checkout_accept_event($order);
                 break;
             case "Canceled:Refund":
-            case "canceled":
+            case "Canceled"://TODO this was "canceled", double check to see if this is correct before going live
                 $order = fitmoo_checkout_braintree_refund($order);
                 break;
             case "somestatus":
                 $order = fitmoo_checkout_braintree_refund($order);
                 break;
-
-
-
         }
     }
 }
@@ -2001,6 +1998,7 @@ function fitmoo_checkout_email_eventconf_buyer($order){
     }
 
     $transaction = Braintree_Transaction::find($remote_transaction_id);
+
     if ($transaction->status == Braintree_Transaction::SUBMITTED_FOR_SETTLEMENT) {
         $result = Braintree_Transaction::void($remote_transaction_id);
         if ($result->success) {error_log(__FUNCTION__." one");
@@ -2009,10 +2007,24 @@ function fitmoo_checkout_email_eventconf_buyer($order){
             _save_transaction ($order, $transaction, $refundedTransactionId, $result);
 
 
-            $product = commerce_product_load($product_id);
+            //$product = commerce_product_load($order->product_id);
+            //error_log("product: ".serialize($product));
 
-            error_log("product: ".serialize($product));
+            //this should be in its own function due to the fact we repeat it 3 times...leaving for now
+            $num_updated = db_update('fitmoo_user_accounting') // Table name no longer needs {}
+            ->fields(array(
+                    'status' => "Canceled",
+                ))
+                ->condition('orderID', $order->order_id, '=')
+                ->execute();
 
+            //we update the user's total using the magic drupal method in fitmoo_admintools.module
+            _update_user_balance($order->field_seller["und"][0]["uid"]);
+
+            //if there's a referer we also update the referer's total
+            if(!is_null($order->field_referer["und"][0]["uid"])){
+                _update_user_balance($order->field_referer["und"][0]["uid"]);
+            }
 
             return $order;
         } else {
@@ -2030,7 +2042,7 @@ function fitmoo_checkout_email_eventconf_buyer($order){
             //this should be in its own function due to the fact we repeat it 3 times...leaving for now
             $num_updated = db_update('fitmoo_user_accounting') // Table name no longer needs {}
             ->fields(array(
-                    'status' => "cancelled",
+                    'status' => "Canceled",
                 ))
                 ->condition('orderID', $order->order_id, '=')
                 ->execute();
@@ -2038,17 +2050,13 @@ function fitmoo_checkout_email_eventconf_buyer($order){
             //we update the user's totals using the magic drupal method in fitmoo_admintools.module
             _update_user_balance($order->field_seller["und"][0]["uid"]);
 
-
             return $order;
         } else {
             //return services_error(t($result->message), 500);
             drupal_set_message(t($result->message));
             return;
         }
-    }else if ($transaction->status == Braintree_Transaction::AUTHORIZED) {//this is never
-        /**
-         * TODO If a buyer or seller cancels an order we cancel it with braintree and set the status of the order to cancelled in our system
-         */
+    }else if ($transaction->status == Braintree_Transaction::AUTHORIZED) {//this should never be run
         $result = Braintree_Transaction::void($remote_transaction_id);
         if ($result->success) {
             $refund = $result->transaction;
@@ -2061,13 +2069,18 @@ function fitmoo_checkout_email_eventconf_buyer($order){
             //this should be in its own function due to the fact we repeat it 3 times...leaving for now
             $num_updated = db_update('fitmoo_user_accounting') // Table name no longer needs {}
             ->fields(array(
-                    'status' => "cancelled",
+                    'status' => "Canceled",
                 ))
                 ->condition('orderID', $order->order_id, '=')
                 ->execute();
 
             //we update the user's totals using the magic drupal method in fitmoo_admintools.module
             _update_user_balance($order->field_seller["und"][0]["uid"]);
+
+            //if there's a referer we also update the referer's total
+            if(!is_null($order->field_referer["und"][0]["uid"])){
+                _update_user_balance($order->field_referer["und"][0]["uid"]);
+            }
 
             return $order;
         } else {
@@ -2083,8 +2096,6 @@ function fitmoo_checkout_email_eventconf_buyer($order){
         drupal_set_message(t("Can't refund order ($transaction->status)"));
         return;
     }
-
-
 
 }
 
@@ -2118,8 +2129,6 @@ function fitmoo_checkout_email_order_cancel_bybuyer($order){
     $from = 'store@fitmoo.com';
     $to = $order->field_seller_email['und'][0]['value'].','.$buyer_mail;
 
-
-
     $headers = array(
         'MIME-Version' => '1.0',
         'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
@@ -2127,14 +2136,10 @@ function fitmoo_checkout_email_order_cancel_bybuyer($order){
         'X-Mailer' => 'Drupal'
     );
     $params['headers'] = $headers;
+
     $message = drupal_mail($module, $key, $to, $language, $params, $from, FALSE);
 
-
     $message['subject'] = "Your order at Fitmoo.com order #".$info['orderID']." was cancelled.";
-
-
-
-
 
     $body = theme('cancelorderemail',$info);
 
@@ -2148,8 +2153,6 @@ function fitmoo_checkout_email_order_cancel_bybuyer($order){
     // Send e-mail.
     $message['result'] = $system->mail($message);
     return TRUE;
-
-
 }
 
 function fitmoo_checkout_braintree_settle($order){
@@ -2198,7 +2201,6 @@ function fitmoo_checkout_release_moola($order_id){
         }
 
     }
-
 
     $results = db_select('fitmoo_user_accounting', 'm')
         ->fields('m')
@@ -2277,8 +2279,6 @@ function fitmoo_checkout_release_moola($order_id){
 
         _update_user_balance($result['uid']);
     }
-
-
 
 }
 
