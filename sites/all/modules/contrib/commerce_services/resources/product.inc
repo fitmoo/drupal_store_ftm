@@ -63,15 +63,8 @@ function commerce_services_product_retrieve_access($product_id) {
  * Creates a new product.
  */
 function commerce_services_product_create($data, $flatten_fields) {
-    error_log(__FILE__);
-    error_log(__FUNCTION__);
-    error_log("");
-    error_log("------------TRYING TO CREATE A PRODUCT-----------");
-    error_log(serialize(debug_backtrace()));
-    error_log("------------------------");
+    //error_log(__FILE__." ".__FUNCTIION__);
   // Ensure the request specifies a unique, valid SKU.
-
-
   global $user;
   if (isset($data['node'])) {
       unset($data['node']);
@@ -214,27 +207,27 @@ function commerce_services_product_create($data, $flatten_fields) {
 
           if(isset($prod['shipping_type_id'])) {
               $prod['field_shipping_type_id'] = trim($prod['shipping_type_id']);
-              error_log("shipping_type_id: " . trim($prod['shipping_type_id']));
+              //error_log("shipping_type_id: " . trim($prod['shipping_type_id']));
               unset($prod['shipping_type_id']);
           }
                 /*-------------------------------*/
 
               $prod['field_shipping_full_amount'] = trim($prod['shipping_full_amount']);
-              error_log("shipping_full_amount: ".$prod['shipping_full_amount']);
-              error_log(gettype($prod['shipping_full_amount']));
+              //error_log("shipping_full_amount: ".$prod['shipping_full_amount']);
+              //error_log(gettype($prod['shipping_full_amount']));
               unset($prod['shipping_full_amount']);
 
               $prod['field_shipping_buyer_amount'] = trim($prod['shipping_buyer_amount']);
-              error_log("shipping_buyer_amount: ".trim($prod['shipping_buyer_amount']));
+              //error_log("shipping_buyer_amount: ".trim($prod['shipping_buyer_amount']));
               unset($prod['shipping_buyer_amount']);
 
-          error_log("-----");
+/*          error_log("-----");
           error_log("file: ".__FILE__);
           error_log("function: ".__FUNCTION__);
           error_log("product_item: ".serialize($product_item));
           error_log("prod: ".serialize($prod));
           error_log("flatten_fields: ".serialize($flatten_fields));
-          error_log("-----");
+          error_log("-----");*/
 
           // Set the field and property data and save the product.
           commerce_services_set_field_values('commerce_product', $product_item, $prod, $flatten_fields);
@@ -343,8 +336,6 @@ function commerce_services_product_create($data, $flatten_fields) {
 
       // Create the new product.
       $product = commerce_product_new($data['type']);
-	  
-	  
 
       // Remove the type from the data array since it's been set.
       unset($data['type']);
@@ -376,10 +367,7 @@ function commerce_services_product_create($data, $flatten_fields) {
       }
 
       return $product;
-
   }
-
-
 }
 
 /**
@@ -410,18 +398,18 @@ function commerce_services_product_create_access($data) {
  * @see commerce_services_update_entity()
  */
 function commerce_services_product_update($product_id, $data, $flatten_fields) {
-    error_log("-----------------PRODUCT UPDATE---------------------");
+/*    error_log("-----------------PRODUCT UPDATE---------------------");
     error_log(__FILE__." ".__FUNCTION__);
     error_log("product_id: ".$product_id);
     error_log("data: ".serialize($data));
     error_log("flatten_fields: ".$flatten_fields);
     error_log(" ");
     error_log("backtrace: ".serialize(debug_backtrace()));
-    error_log(" ");
+    error_log(" ");*/
 
  global $user;
  if(is_array($data['items'][0])) {
-     error_log("uno");
+     //error_log("uno");
       $array = array();
       foreach($data['items'][0] as $key => $items){
           $product = commerce_product_load($items[0]);
@@ -432,7 +420,7 @@ function commerce_services_product_update($product_id, $data, $flatten_fields) {
       }
       return $array;
  } else if ($data['node'] == "true") {
-     error_log("dos");
+     //error_log("dos");
      unset($data['node']);
      $product_node = node_load($product_id);
      $uid = $user->uid;
@@ -506,7 +494,7 @@ function commerce_services_product_update($product_id, $data, $flatten_fields) {
      }*/
      return $product_node;
  } else {
-     error_log("tres");
+     //error_log("tres");
      $product = commerce_product_load($product_id);
      if (!commerce_product_access('update', $product)) {
          return services_error(t('Access to this operation not granted'), 401);
@@ -520,9 +508,6 @@ function _cs_product_update($product_id, $data, $flatten_fields) {error_log(__FI
     if (!empty($data['size'])) {
         //get the type from rails
         $res = field_info_instances('commerce_product', $data['type']);
-
-        #$res = field_info_instances('commerce_product', 'clothing');
-        #error_log("res: ".serialize($res));
 
         foreach ($res as $key1=>$value1){
             if (preg_match('/(.*)(field)(.*)(size)(.*)/ism',$key1,$matches)) {
@@ -552,7 +537,7 @@ function _cs_product_update($product_id, $data, $flatten_fields) {error_log(__FI
         unset($data['image']);
     }
 
-    error_log("About to update product with ".serialize($data));
+    //error_log("About to update product with ".serialize($data));
 
     $product = commerce_services_update_entity('commerce_product', $product_id, $data, $flatten_fields);
 

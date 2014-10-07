@@ -1893,7 +1893,7 @@ function commerce_services_entity_type_properties($entity_type) {
       $properties[$entity_type] += array('revision', 'log');
     }
   }
-    error_log("properties[entity_type]: ".serialize($properties[$entity_type]));
+    //error_log("properties[entity_type]: ".serialize($properties[$entity_type]));
   return $properties[$entity_type];
 }
 
@@ -2070,10 +2070,10 @@ function commerce_services_validate_field_value($entity_type, $entity, $field_na
 function commerce_services_update_field_value($entity_type, $entity, $field_info, $value, $langcode = NULL, $delta = NULL) {
   $field_name = $field_info['field_name'];
     error_log(__FILE__);error_log(__FUNCTION__);
-    error_log("entity_type: ".serialize($entity_type));
-    error_log("field info: ".serialize($field_info));
-    error_log("value: ".serialize($value));
-    error_log("columns: ".serialize($field_info["columns"]));
+    //error_log("entity_type: ".serialize($entity_type));
+    //error_log("field info: ".serialize($field_info));
+    //error_log("value: ".serialize($value));
+    //error_log("columns: ".serialize($field_info["columns"]));
   // If the value given is an array...
   if (is_array($value)) {
     // Ensure the keys given for the value array all match columns in the field
@@ -2081,13 +2081,13 @@ function commerce_services_update_field_value($entity_type, $entity, $field_info
     if (count(array_diff_key($value, $field_info['columns'])) > 0) {
       return services_error(t('Invalid @field value given', array('@field' => $field_name)), 400);
     }
-  }
-  elseif (count($field_info['columns']) == 1) {
+
+  } elseif (count($field_info['columns']) == 1) {
     // Otherwise, if a scalar was given for a single column field, rewrite the
     // value to be an array keyed by the column name.
     $value = array(key($field_info['columns']) => $value);
-  }
-  else {
+
+  } else {
 	error_log(__FILE__." ".__FUNCTION__." ".__LINE__." the error is happening");
     // Return an error if an array was given for a single column field instead
     // of a scalar.

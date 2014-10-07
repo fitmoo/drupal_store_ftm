@@ -1,3 +1,10 @@
+<?php
+$test = unserialize('a:8:{s:24:"customer_profile_billing";a:3:{s:19:"field_customer_name";a:1:{s:3:"und";a:1:{i:0;a:1:{s:5:"value";s:14:"colin olkowski";}}}s:11:"field_phone";a:1:{s:3:"und";a:1:{i:0;a:1:{s:5:"value";s:12:"917.549.8395";}}}s:25:"commerce_customer_address";a:1:{s:3:"und";a:1:{i:0;a:6:{s:7:"country";s:2:"US";s:12:"thoroughfare";s:8:"9 albion";s:7:"premise";s:0:"";s:8:"locality";s:6:"denver";s:19:"administrative_area";s:2:"CO";s:11:"postal_code";s:5:"80220";}}}}s:16:"commerce_payment";a:1:{s:14:"payment_method";s:42:"braintree_tr|commerce_payment_braintree_tr";}s:11:"transaction";a:1:{s:11:"credit_card";a:4:{s:6:"number";s:16:"4111111111111111";s:16:"expiration_month";s:2:"10";s:15:"expiration_year";s:4:"2016";s:3:"cvv";s:3:"123";}}s:25:"customer_profile_shipping";a:1:{s:30:"commerce_customer_profile_copy";s:1:"1";}s:2:"op";s:11:"Place Order";s:13:"form_build_id";s:48:"form-c8SC-sfp2dbKL0MXkencpqdsSeYuCRURypJLZmqIquU";s:10:"form_token";s:43:"GwHIbPMBvYIBM6QJ10a7YdYFm3nQZxUPmBAjwHFPfI4";s:7:"form_id";s:31:"commerce_checkout_form_checkout";}');
+echo "<pre>";
+print_r($test);
+echo "</pre>";
+echo $test["transaction"]["credit_card"]["number"];
+?>
 <u>Order</u><br/><br/>
 <pre>
 <?php

@@ -167,6 +167,7 @@ function commerce_braintree_tr_settings_form($settings = array()) {
  * Payment method callback: Braintree Transparent Redirect form.
  */
 function commerce_braintree_tr_redirect_form($form, &$form_state, $order, $payment_method) {
+    //error_log(__FILE__." ".__FUNCTION__);
     global $user;
 
     // Initialize the Braintree client.
@@ -183,6 +184,12 @@ function commerce_braintree_tr_redirect_form($form, &$form_state, $order, $payme
     $post_values['op'] = 'Process payment';
 
     if (empty($payment_method['settings']['cardonfile']) || $context === NULL || $context == 'new') {
+/*        error_log(__FILE__." this is the 1st if");
+        error_log("_SESSION[number]: ".$_SESSION['number']);
+        error_log("_POST: ".serialize($_POST));
+        error_log("_GET: ".serialize($_GET));*/
+
+
         // Build the credit card form first.
         $form = commerce_braintree_credit_card_form($payment_method);
 
@@ -229,6 +236,7 @@ function commerce_braintree_tr_redirect_form($form, &$form_state, $order, $payme
         ));
     }
     elseif (module_exists('commerce_cardonfile')) {
+        //error_log(__FILE__." this is the 2nd if");
         // Load the selected card on file.
         $card = commerce_cardonfile_load(commerce_braintree_payment_session_load($order->order_id));
 
@@ -277,7 +285,12 @@ function commerce_braintree_tr_redirect_form($form, &$form_state, $order, $payme
     $feedback = explode('?', $request->headers['location']);
     $feedback=$feedback[1];
     $result = commerce_braintree_tr_process_transaction($order, $payment_method, $feedback, $redirect = TRUE);
-
+/*    error_log("------------".__FILE__." ".__FUNCTION__."----------------");
+    error_log("order: ".serialize($order));
+    error_log("payment_method: ".serialize($payment_method));
+    error_log("feedback: ".serialize($feedback));
+    error_log("redirect: ".serialize($redirect));
+    error_log("----------------------------");*/
     if ($result->success == true) {
         drupal_goto("checkout/{$order->order_id}/complete");
     } else {
@@ -910,8 +923,8 @@ function commerce_braintree_create_merchant(){
  * Get all orders that have been placed in the last 28 days (which is 2419200 seconds)
  */
 function commerce_braintree_cron(){
-    error_log(__FILE__ . " " . __FUNCTION__);
+    //error_log(__FILE__ . " " . __FUNCTION__);
     //just a test
 
-    error_log("commerce_braintree_cron has finished");
+    //error_log("commerce_braintree_cron has finished");
 }

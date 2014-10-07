@@ -1,5 +1,5 @@
 <?php
-
+error_log(__FILE__);
 /**
  * @file
  * Functional tests for the commerce payment module user interface.

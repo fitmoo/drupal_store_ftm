@@ -1136,17 +1136,31 @@ function fitmoo_checkout_form_cancel_submit($form, &$form_state) {
 }
 
 function fitmoo_checkout_commerce_checkout_router($order, $checkout_page) {
+/*    error_log("-------------".__FILE__." ".__FUNCTION__."----------------");
+    error_log("_POST: ".serialize($_POST));
+    error_log("_GET: ".serialize($_GET));
+    error_log("order: ".serialize($order));
+    error_log("checkout_page: ".serialize($checkout_page));
+    error_log("session: ".serialize($_SESSION));
+    error_log("* * * * *");*/
+
     global $user;
-    if($order->status == 'checkout_checkout' and $checkout_page['title'] == 'Checkout'){
-        $_SESSION['number'] = $_POST['transaction']['credit_card']['number'];
-        $_SESSION['cardholder_name'] = $_POST['transaction']['credit_card']['cardholder_name'];
-        $_SESSION['expiration_month'] = $_POST['transaction']['credit_card']['expiration_month'];
-        $_SESSION['expiration_year'] = $_POST['transaction']['credit_card']['expiration_year'];
-        $_SESSION['cvv'] = $_POST['transaction']['credit_card']['cvv'];
+    if(($order->status == 'checkout_checkout' || $order->status == 'cart') and $checkout_page['title'] == 'Checkout'){
+        //error_log("GOING TO SET PAYMENT INFO INTO SESSION");
+        //old way that george et al did this
+        if(isset($_POST['transaction']['credit_card']['number']) && $_POST['transaction']['credit_card']['number'] != "") {
+            $_SESSION['number'] = $_POST['transaction']['credit_card']['number'];
+            $_SESSION['cardholder_name'] = $_POST['transaction']['credit_card']['cardholder_name'];
+            $_SESSION['expiration_month'] = $_POST['transaction']['credit_card']['expiration_month'];
+            $_SESSION['expiration_year'] = $_POST['transaction']['credit_card']['expiration_year'];
+            $_SESSION['cvv'] = $_POST['transaction']['credit_card']['cvv'];
+        }
+
+        //error_log("session: ".serialize($_SESSION));
     }
 
     if($order->status == 'pending'){
-
+    //error_log(__FUNCTION__." order->status: ".$order->status);
         foreach ($order->commerce_line_items['und'] as $itemkey=>$itemvalue) {
             $lineitem = commerce_services_retrieve_entity('commerce_line_item', $itemvalue['line_item_id'], 1, true);
             if ($lineitem->type=="product") {
@@ -1159,21 +1173,6 @@ function fitmoo_checkout_commerce_checkout_router($order, $checkout_page) {
             }
         }
 
-
-//
-//
-//        Resquest
-//
-//{
-//    id: <integer>
-//stock: <integer>
-//
-//}
-//
-//Respond
-//{
-//    ok: 0
-//}
         $redirect_base = variable_get('redirect_base', '');
         //===========1st_call=============
         $data = '{"id" : "'.$product_id.'" , "stock" : "'.$in_stock.'"}';
@@ -1186,7 +1185,6 @@ function fitmoo_checkout_commerce_checkout_router($order, $checkout_page) {
 
         $result['stock'] = drupal_http_request('http://admin:fitmoo@'.$redirect_base.'/api/update_stock', $options);
 
-
         //==========2nd call==============
         $data = '{"order_id" : "'.$order->order_id.'" , "seller_email" : "'.$product_seller->mail.'" , "buyer_email" : "'.$product_buyer->mail.'", "product_id" : "'.$product_id.'"}';
         $options = array(
@@ -1198,9 +1196,9 @@ function fitmoo_checkout_commerce_checkout_router($order, $checkout_page) {
 
         $result['notification'] = drupal_http_request('http://admin:fitmoo@'.$redirect_base.'/api/orders/'.$order->order_id.'/notification', $options);
 
-//exit();
         module_invoke_all('user_logout', $user);
         session_destroy();
+        //error_log("session_destroy()");
         drupal_goto(variable_get('anonymous_redirect_base', '').'/dashboard/purchases');
     }
 }
@@ -1803,10 +1801,13 @@ function fitmoo_checkout_views_data() {
 
     return $data;
 }
-
+/**
+ * TODO figure out what this is actually doing
+ */
 function fitmoo_checkout_commerce_order_presave($order) {
     $prev_orderstat = commerce_order_load($order->order_id);
-    if($order->status <> $prev_orderstat->status){
+    //added the isset test cfo 10/6/2014
+    if(isset($prev_orderstat->status) && $order->status <> $prev_orderstat->status){
         switch ($order->status) {
             case "Completed:Accepted":
                 //if($order->data['payment_method'] == 'braintree_tr|commerce_payment_braintree_tr'){
@@ -1826,6 +1827,9 @@ function fitmoo_checkout_commerce_order_presave($order) {
             case "somestatus":
                 $order = fitmoo_checkout_braintree_refund($order);
                 break;
+            default:
+                //error_log("order->status didn't hit a break point");
+                //error_log(("order->status: ".$order->status));
         }
     }
 }
@@ -1973,8 +1977,8 @@ function fitmoo_checkout_email_eventconf_buyer($order){
 }
 
     function fitmoo_checkout_braintree_refund($order){
-    error_log(__FILE__." ".__FUNCTION__);
-    error_log("refunded order: ".serialize($order));
+    //error_log(__FILE__." ".__FUNCTION__);
+    //error_log("refunded order: ".serialize($order));
     $path = drupal_get_path('module', 'services');
 
     require_once( $path.'/includes/services.runtime.inc');
@@ -2001,7 +2005,7 @@ function fitmoo_checkout_email_eventconf_buyer($order){
 
     if ($transaction->status == Braintree_Transaction::SUBMITTED_FOR_SETTLEMENT) {
         $result = Braintree_Transaction::void($remote_transaction_id);
-        if ($result->success) {error_log(__FUNCTION__." one");
+        if ($result->success) {//error_log(__FUNCTION__." one");
             $refund = $result->transaction;
             $refundedTransactionId = $refund->refundedTransactionId;
             _save_transaction ($order, $transaction, $refundedTransactionId, $result);
@@ -2034,7 +2038,7 @@ function fitmoo_checkout_email_eventconf_buyer($order){
         }
     } else if ($transaction->status == Braintree_Transaction::SETTLED) {
         $result = Braintree_Transaction::refund($remote_transaction_id);
-        if ($result->success) {error_log(__FUNCTION__." two");
+        if ($result->success) {//error_log(__FUNCTION__." two");
             $refund = $result->transaction;
             $refundedTransactionId = $refund->refundedTransactionId;
             _save_transaction ($order, $transaction, $refundedTransactionId, $result);
@@ -2063,8 +2067,8 @@ function fitmoo_checkout_email_eventconf_buyer($order){
             $refundedTransactionId = $refund->refundedTransactionId;
             _save_transaction ($order, $transaction, $refundedTransactionId, $result);
 
-            error_log(__FUNCTION__." three");
-            error_log($order->field_seller["und"][0]["uid"]);
+            //error_log(__FUNCTION__." three");
+            //error_log($order->field_seller["und"][0]["uid"]);
 
             //this should be in its own function due to the fact we repeat it 3 times...leaving for now
             $num_updated = db_update('fitmoo_user_accounting') // Table name no longer needs {}
@@ -2099,7 +2103,7 @@ function fitmoo_checkout_email_eventconf_buyer($order){
 
 }
 
-function _save_transaction ($order, $transaction, $refundedTransactionId, $result) {error_log(__FILE__." ".__FUNCTION__);
+function _save_transaction ($order, $transaction, $refundedTransactionId, $result) {//error_log(__FILE__." ".__FUNCTION__);
     $transaction1 = commerce_payment_transaction_new('commerce_payment_braintree_tr', $order->order_id);
     $transaction1->instance_id = 'braintree_tr';
     $transaction1->amount = $transaction->amount*100;

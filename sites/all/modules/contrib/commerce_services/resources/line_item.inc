@@ -63,6 +63,7 @@ function commerce_services_line_item_retrieve_access($line_item_id) {
  * Creates a new cart order for the current API user. (IMPORTED from cart.inc)
  */
 function commerce_services_cart_create($data, $flatten_fields) {
+    //error_log(__FILE__." ".__FUNCTION__);
     global $user;
     $uid = !empty($user->uid) ? $user->uid : 0;
 
@@ -111,6 +112,9 @@ function commerce_services_cart_create($data, $flatten_fields) {
  * Creates a new line item on an order.
  */
 function commerce_services_line_item_create($data, $flatten_fields) {
+    //error_log(__FILE__." ".__FUNCTION__);
+    //error_log("data: ".serialize($data));
+    //error_log("data: ".serialize($flatten_fields));
     global $user;
 
     $_SESSION["order_meta_data"] = $data["order_meta_data"];
@@ -137,6 +141,8 @@ function commerce_services_line_item_create($data, $flatten_fields) {
 
     $order = commerce_order_load($order_id);
 
+    //error_log("order: ".serialize($order));
+
     if (!empty($data['endorser_drupal_id'])){
         $_SESSION['endorser_drupal_id'] = $data['endorser_drupal_id'];
         $order->field_referer['und'][0]['uid'] = $data['endorser_drupal_id'];
@@ -147,26 +153,49 @@ function commerce_services_line_item_create($data, $flatten_fields) {
   if ($data['type'] != 'shipping') {
 
       $product = commerce_product_load($data['commerce_product']);
+        //error_log("-> order: ".serialize($order));
 
-      foreach ($order->commerce_line_items['und'] as $line) {
-          $line_item = commerce_line_item_load($line['line_item_id']);
-          if ($line_item->type != 'shipping') {
-              if($product->product_id != $line_item->commerce_product['und'][0]['product_id']){
-                  commerce_cart_order_product_line_item_delete($order, $line['line_item_id'], FALSE);
-                  // Delete any existing shipping line items from the order.
-                  commerce_shipping_delete_shipping_line_items($order, false);
+
+      /**
+       * TODO Find out how/what George et al did to screw this up so badly
+       * At this point if this is a new user buying for the first time there are no line items so this will throw errors, cfo 10/6/2014
+       */
+      //added a check to see if the $order->commerce_line_items is set
+      if(isset($order->commerce_line_items)) {
+          foreach ($order->commerce_line_items['und'] as $line) {
+              $line_item = commerce_line_item_load($line['line_item_id']);
+
+              //error_log("line_item: " . serialize($line_item));
+
+              if ($line_item->type != 'shipping') {
+                  if ($product->product_id != $line_item->commerce_product['und'][0]['product_id']) {
+                      commerce_cart_order_product_line_item_delete($order, $line['line_item_id'], FALSE);
+                      // Delete any existing shipping line items from the order.
+                      commerce_shipping_delete_shipping_line_items($order, false);
+                  }
               }
           }
       }
 
-      foreach ($order->commerce_line_items['und'] as $key=>$value) {
-          $line_item =  $entity = entity_load_single('commerce_line_item', $value['line_item_id']);
-          if ($data['commerce_product'] == $line_item->commerce_product['und'][0]['product_id']) {
-                $data['quantity'] = $line_item->quantity + $data['quantity'];
-                $line = commerce_services_line_item_update($value['line_item_id'], $data,false);
-                return $line;
-                break;
+      /**
+       * TODO Find out how/what George et al did to screw this up so badly
+       * At this point if this is a new user buying for the first time there are no line items so this will throw errors, , cfo 10/6/2014
+       */
+      //added a check to see if the $order->commerce_line_items is set
+      if(isset($order->commerce_line_items)){
+          foreach ($order->commerce_line_items['und'] as $key=>$value) {
+              $line_item =  $entity = entity_load_single('commerce_line_item', $value['line_item_id']);
+              //added a check to see if the commerce_product is set, if this is a new users buying for the first time it won't be, cfo 10/6/2014
+              if (isset($line_item->commerce_product['und'][0]['product_id']) && $data['commerce_product'] == $line_item->commerce_product['und'][0]['product_id']) {
+                  //error_log("line_item->commerce_product['und'][0]['product_id']: ".$line_item->commerce_product['und'][0]['product_id']);
+                    $data['quantity'] = $line_item->quantity + $data['quantity'];
+                    $line = commerce_services_line_item_update($value['line_item_id'], $data,false);
+                    return $line;
+                    break;
+              }
           }
+      }else{
+          //error_log("order->commerce_line_items isn't set");
       }
 
       add_manual_shipping_line_item($order, $data);
@@ -394,12 +423,6 @@ function add_manual_shipping_line_item($order, $data) {
     commerce_shipping_delete_shipping_line_items($order, false);
 
     // Save and add the line item to the order.
-
-    /**
-     * If the
-     */
-    //Tij clue if($_SESSION['product_fitmoo_type'] == 'physicalgood'){
-    error_log("count(order->commerce_line_items): ".count($order->commerce_line_items));
     return commerce_shipping_add_shipping_line_item($line_item, $order, false);
 }
 
