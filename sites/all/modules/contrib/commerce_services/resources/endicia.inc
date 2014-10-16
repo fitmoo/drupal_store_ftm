@@ -607,19 +607,53 @@ function _endicia_ui_print_label_confirm_form_submit($form_state) {
  * @see commerce_services_update_entity()
  */
 function commerce_services_endicia_update($number, $dat, $flatten_fields) {
+
+    //Using USPS Web Tools Directly
+    $URL = "http://production.shippingapis.com/ShippingAPI.dll?API=TrackV2";
+    $xmlRequest = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<TrackRequest USERID="630FITMO5250">
+    	<TrackID ID="$number"></TrackID>
+</TrackRequest>
+XML;
+
+    $requestData = '&XML=' . $xmlRequest;
+
+    $curl_handle = curl_init ();
+    curl_setopt ($curl_handle, CURLOPT_URL, $URL);
+    curl_setopt ($curl_handle, CURLOPT_FOLLOWLOCATION, 1);
+    curl_setopt ($curl_handle, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt ($curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt ($curl_handle, CURLOPT_POST, 1);
+    curl_setopt ($curl_handle, CURLOPT_POSTFIELDS, $requestData);
+
+    $curl_result = curl_exec ($curl_handle) or die ("There has been a CURL_EXEC error");
+
+
+    curl_close ($curl_handle);
+    if ($curl_result === FALSE) {
+        return false;
+    }
+
+
+    $result = xml2array($curl_result);
+    //Return the summary array
+    return $result['TRACKINFO']['TRACKSUMMARY'];
+
+
+    /*
+    //--Original code Calling GrindFLOW
     $data = array();
     $account_id = variable_get('endicia_account_id', '');
     $passphrase = variable_get('endicia_passphrase', '');
-
-
 
     $URL = "https://www.endicia.com/ELS/ELSServices.cfc?wsdl";
     $xmlRequest = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
   <StatusRequest>
     <AccountID>$account_id</AccountID>
-    <Test>Y</Test>
-    <Password>$passphrase</Password>
+    <Test>N</Test>
+    <PassPhrase>$passphrase</PassPhrase>
     <FullStatus>Yes</FullStatus>
     <StatusList>
        <PICNumber>$number</PICNumber>
@@ -647,9 +681,10 @@ XML;
 
 
 
-    $result = xml2array($curl_result);
+    $result = xml2array($curl_result); 
+    echo "Result is : ".serialize($result);
     return $result['STATUSBREAKDOWN'];
-
+   */
 
     //$response_node = 'StatusResponse';
 //    //$response = endicia_api_request(ENDICIA_ELS_SERVICES_URI, 'StatusRequest', $data, $response_node);

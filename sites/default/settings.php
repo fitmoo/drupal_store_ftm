@@ -216,10 +216,10 @@ $databases = array (
     'default' => 
     array (
       'database' => 'fitmoo_store',
-      'username' => 'fitstore_admin',
-      'password' => 'default',
-      'host' => 'localhost',
-      'port' => '',
+      'username' => 'fitmoo_admin',
+      'password' => 'fitm00100',
+      'host' => 'fitmoo-ecommerce-production.cb6kme3g0ll7.us-east-1.rds.amazonaws.com',
+      'port' => '3306',
       'driver' => 'mysql',
       'prefix' => '',
     ),
@@ -569,5 +569,5 @@ $conf['404_fast_html'] = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
 # added by colin o. 7/24/2014
 $conf['user_mail_register_no_approval_required_notify'] = FALSE;
 $conf['anonymous_redirect_enable'] = TRUE; // Set to FALSE to disable.
-$conf['anonymous_redirect_base'] = 'http://dev.fitmoo.com:3000';
-$conf['redirect_base'] = 'dev.fitmoo.com:3000';
+$conf['anonymous_redirect_base'] = 'https://beta.fitmoo.com';
+$conf['redirect_base'] = 'beta.fitmoo.com';

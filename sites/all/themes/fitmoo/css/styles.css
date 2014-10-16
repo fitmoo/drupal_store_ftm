@@ -276,14 +276,14 @@ THEME STRUCTURE
 .page-checkout .region-sidebar-second .views-field-commerce-product .field-type-image {
   margin-bottom: 10px; }
 .page-checkout .region-sidebar-second .views-field-edit-quantity {
-  float: left;
+  float: right;
   padding: 0;
-  width: 45%; }
+  width: 26%; }
 .page-checkout .region-sidebar-second .views-field-edit-quantity .views-label {
   display: block;
   margin-bottom: 9px; }
 .page-checkout .region-sidebar-second .views-field-edit-quantity input {
-  width: 50px; }
+  width: 50px; text-align: center;}
 .page-checkout .region-sidebar-second .views-field-uid {
   clear: both;
   display: block;
