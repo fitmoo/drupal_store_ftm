@@ -203,7 +203,8 @@ function _update_user_balance($uid){
 	//referals/endorsements/referrer
 	$q = db_select('fitmoo_user_accounting', 'a')
   	    ->fields('a')
-  		->condition('uid', $uid,'=')	
+  		->condition('uid', $uid,'=')
+  		->condition('type','refferer','=')
 		->condition('status','cancelled','!=');
 	$q->addExpression('SUM(ammount)', 'ammount');	
   	$result = $q->execute()->fetchAssoc();	

@@ -42,7 +42,6 @@ function commerce_services_score_retrieve($uid) {error_log(__FILE__." ".__FUNCTI
     if (is_array($user->roles) && in_array('administrator', $user->roles)) {
         if (!empty($data['uid'])) {$uid = $data['uid'];}
     }
-
     //$pending_sell_income = db_query("SELECT SUM( ammount ) as ammount FROM `fitmoo_user_accounting` WHERE uid = $uid and status ='pending' and type='seller'")->fetchField();
     //$pending_buy_income = db_query("SELECT SUM( ammount ) as ammount FROM `fitmoo_user_accounting` WHERE uid = $uid and status ='pending' and type='buyer'")->fetchField();
     //$pending = $pending_sell_income + $pending_buy_income;
@@ -87,10 +86,10 @@ function commerce_services_score_retrieve_access() {
 }
 
 function commerce_services_score_index($uid) {error_log(__FILE__." ".__FUNCTION__);
+
     global $user;
     $uid =  $user->uid;
     $user_object = user_load($uid);
-    //error_log("user_object: ".serialize($user_object));
     if (is_array($user->roles) && in_array('administrator', $user->roles)) {
         if (!empty($data['uid'])) {$uid = $data['uid'];}
     }
@@ -130,7 +129,7 @@ function commerce_services_score_index($uid) {error_log(__FILE__." ".__FUNCTION_
 	}
 	
 	unset($user_object);
-	//error_log("result: ".serialize($result));
+	error_log("result: ".serialize($result));
     return $result;
 }
 
