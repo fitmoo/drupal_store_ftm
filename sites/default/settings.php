@@ -216,9 +216,9 @@ $databases = array (
     'default' => 
     array (
       'database' => 'fitmoo_store',
-      'username' => 'fitmoo_admin',
-      'password' => 'fitm00100',
-      'host' => 'fitmoo-ecommerce-production.cb6kme3g0ll7.us-east-1.rds.amazonaws.com',
+      'username' => 'root',
+      'password' => 'default',
+      'host' => '',
       'port' => '3306',
       'driver' => 'mysql',
       'prefix' => '',

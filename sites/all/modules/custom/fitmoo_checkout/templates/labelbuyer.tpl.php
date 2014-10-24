@@ -133,3 +133,4 @@ $redirect_base = variable_get('anonymous_redirect_base', '');
     </div>
 </div>
 </body>
+</html>

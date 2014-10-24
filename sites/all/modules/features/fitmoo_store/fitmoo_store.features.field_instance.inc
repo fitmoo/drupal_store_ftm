@@ -1520,40 +1520,6 @@ function fitmoo_store_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'commerce_order-commerce_order-field_shipping_carrier'
-  $field_instances['commerce_order-commerce_order-field_shipping_carrier'] = array(
-    'bundle' => 'commerce_order',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'text',
-        'settings' => array(),
-        'type' => 'text_default',
-        'weight' => 10,
-      ),
-    ),
-    'entity_type' => 'commerce_order',
-    'field_name' => 'field_shipping_carrier',
-    'label' => 'Shipping Carrier',
-    'required' => 0,
-    'settings' => array(
-      'text_processing' => 0,
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'text',
-      'settings' => array(
-        'size' => 60,
-      ),
-      'type' => 'text_textfield',
-      'weight' => 11,
-    ),
-  );
-
   // Exported field_instance: 'commerce_product-clothing-commerce_price'
   $field_instances['commerce_product-clothing-commerce_price'] = array(
     'bundle' => 'clothing',

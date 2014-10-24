@@ -86,10 +86,11 @@ function commerce_services_score_retrieve_access() {
     if (!empty($user->uid)) {return TRUE;} else {return FALSE;}
 }
 
-function commerce_services_score_index($uid) {error_log(__FILE__." ".__FUNCTION__);error_log(('hi colin'));
+function commerce_services_score_index($uid) {error_log(__FILE__." ".__FUNCTION__);
     global $user;
     $uid =  $user->uid;
     $user_object = user_load($uid);
+    //error_log("user_object: ".serialize($user_object));
     if (is_array($user->roles) && in_array('administrator', $user->roles)) {
         if (!empty($data['uid'])) {$uid = $data['uid'];}
     }
@@ -108,7 +109,9 @@ function commerce_services_score_index($uid) {error_log(__FILE__." ".__FUNCTION_
     $result['ballance'] = $user_object->field_balance_total['und'][0]['value'];
     $result['pending'] = $user_object->field_balance_pending['und'][0]['value'];
     $result['redeemable'] = $user_object->field_balance_available['und'][0]['value'];
-	
+    $result['endorsements'] = $user_object->field_balance_endorsements['und'][0]['value'];
+    $result['sales'] = $result['ballance'] - $result['endorsements'];
+
 	$results = db_select('fitmoo_user_redemptions', 'm')
 	    ->fields('m')
 		->condition('uid', $user_object->uid,'=')
@@ -127,7 +130,7 @@ function commerce_services_score_index($uid) {error_log(__FILE__." ".__FUNCTION_
 	}
 	
 	unset($user_object);
-	error_log("result: ".serialize($result));
+	//error_log("result: ".serialize($result));
     return $result;
 }
 
