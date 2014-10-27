@@ -201,11 +201,14 @@ function _update_user_balance($uid){
 	$cleared = $cleared - ($redemption * -1);
 
 	//referals/endorsements/referrer
+	//Notice the Canceled misspelling...it's in the database that way
+	//Notice we don't distinguish between cleared and pending, so endorsed profits are always used...fix this
 	$q = db_select('fitmoo_user_accounting', 'a')
   	    ->fields('a')
   		->condition('uid', $uid,'=')
   		->condition('type','refferer','=')
-		->condition('status','cancelled','!=');
+		->condition('status','Canceled','!=')
+		->condition('status','Canceled:Refund','!=');
 	$q->addExpression('SUM(ammount)', 'ammount');	
   	$result = $q->execute()->fetchAssoc();	
 
